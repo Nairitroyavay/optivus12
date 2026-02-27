@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Optivus - Daily Routine Timeline v2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ee8c2b",
+              "background-light": "#f8f7f6",
+              "background-dark": "#221910",
+              "glass-border": "rgba(255, 255, 255, 0.4)",
+              "glass-bg": "rgba(255, 255, 255, 0.65)",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "1.25rem", "3xl": "1.5rem", "full": "9999px"},
+            backdropBlur: {
+              'xs': '2px',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar hiding for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Glassmorphism utilities */
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(238, 140, 43, 0.15);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        /* Subtle animated background gradient */
+        .liquid-bg {
+            background: radial-gradient(circle at 0% 0%, rgba(238, 140, 43, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 100% 100%, rgba(238, 140, 43, 0.1) 0%, transparent 50%),
+                        linear-gradient(180deg, #fcfaf8 0%, #fffbf5 100%);
+        }
+
+        .grid-line {
+            background-image: linear-gradient(to right, rgba(238, 140, 43, 0.2) 50%, transparent 50%);
+            background-position: bottom;
+            background-size: 8px 1px;
+            background-repeat: repeat-x;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased font-display text-slate-900 liquid-bg min-h-screen relative overflow-hidden flex flex-col">
+<!-- Header Section -->
+<header class="px-6 pt-12 pb-4 flex items-center justify-between sticky top-0 z-20 bg-gradient-to-b from-[#fcfaf8]/90 to-transparent backdrop-blur-xs">
+<div class="flex flex-col">
+<h2 class="text-slate-500 text-sm font-medium uppercase tracking-wider mb-0.5">Thursday</h2>
+<div class="flex items-baseline gap-2">
+<h1 class="text-3xl font-bold text-slate-900 tracking-tight">Oct 24</h1>
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-slate-700 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+</button>
+<div class="w-10 h-10 rounded-full glass-card p-0.5 overflow-hidden">
+<img alt="Profile portrait of a young woman" class="w-full h-full object-cover rounded-full" data-alt="User profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqlXIRYzDkCd5IkBv-onZK6u21Ww3qT6vcbwiVvnlTQt9HeRRFquQYc6QJd7ELUQjKTZeLBXbO76MGxGF0k8tnEOviKTiWQNMTHzSLBrH06x3o707NnhJYabwrvEp7UrvAcpSSfzGcu3jwDWfCCbmAxE1qpNN2Fto0aIZwfgQ6tQHY2KDeWR_goYwQXyINN4EglttHugY4Oz8-utdT8hak4dsD3SllI7Jqg1MnkCQfsSOhVzCRtoulG2CvqeCaPEwDsrcRmeqrLM56"/>
+</div>
+</div>
+</header>
+<!-- Main Scrollable Area -->
+<main class="flex-1 overflow-y-auto no-scrollbar relative z-10 pb-28 px-4">
+<!-- Timeline Container -->
+<div class="relative min-h-[800px] flex">
+<!-- Time Axis -->
+<div class="w-14 flex-shrink-0 flex flex-col pt-4 relative">
+<!-- Vertical Line -->
+<div class="absolute right-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-primary/20 to-transparent"></div>
+<!-- Time Markers -->
+<div class="h-24 flex items-start justify-end pr-3 text-xs font-medium text-slate-400 relative">
+<span>07:00</span>
+<div class="absolute right-[-4px] top-2 w-2 h-[1px] bg-primary/30"></div>
+</div>
+<div class="h-32 flex items-start justify-end pr-3 text-xs font-medium text-slate-400 relative">
+<span>09:00</span>
+<div class="absolute right-[-4px] top-2 w-2 h-[1px] bg-primary/30"></div>
+</div>
+<div class="h-24 flex items-start justify-end pr-3 text-xs font-medium text-slate-400 relative">
+<span>12:00</span>
+<div class="absolute right-[-4px] top-2 w-2 h-[1px] bg-primary/30"></div>
+</div>
+<div class="h-24 flex items-start justify-end pr-3 text-xs font-medium text-slate-400 relative">
+<span>14:00</span>
+<div class="absolute right-[-4px] top-2 w-2 h-[1px] bg-primary/30"></div>
+</div>
+<div class="h-24 flex items-start justify-end pr-3 text-xs font-medium text-slate-400 relative">
+<span>16:00</span>
+<div class="absolute right-[-4px] top-2 w-2 h-[1px] bg-primary/30"></div>
+</div>
+<div class="h-24 flex items-start justify-end pr-3 text-xs font-medium text-slate-400 relative">
+<span>18:00</span>
+<div class="absolute right-[-4px] top-2 w-2 h-[1px] bg-primary/30"></div>
+</div>
+<div class="h-24 flex items-start justify-end pr-3 text-xs font-medium text-slate-400 relative">
+<span>20:00</span>
+<div class="absolute right-[-4px] top-2 w-2 h-[1px] bg-primary/30"></div>
+</div>
+</div>
+<!-- Events Column -->
+<div class="flex-1 pl-4 relative pt-4">
+<!-- Background Grid Lines (Visual Guide) -->
+<div class="absolute inset-0 pointer-events-none z-0 flex flex-col">
+<div class="h-24 w-full grid-line opacity-30"></div>
+<div class="h-32 w-full grid-line opacity-30"></div>
+<div class="h-24 w-full grid-line opacity-30"></div>
+<div class="h-24 w-full grid-line opacity-30"></div>
+<div class="h-24 w-full grid-line opacity-30"></div>
+<div class="h-24 w-full grid-line opacity-30"></div>
+</div>
+<!-- 07:00 - Morning Ritual -->
+<div class="relative z-10 mb-4 h-20 group">
+<div class="glass-card w-full h-full rounded-3xl p-4 flex items-center justify-between transition-transform hover:scale-[1.01] active:scale-[0.99] cursor-grab active:cursor-grabbing">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-100 to-transparent flex items-center justify-center text-primary border border-white/50 shadow-sm">
+<span class="material-symbols-outlined">wb_sunny</span>
+</div>
+<div>
+<h3 class="text-slate-900 font-bold text-base leading-tight">Morning Ritual</h3>
+<p class="text-slate-500 text-xs font-medium mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 07:00 - 08:30
+                                </p>
+</div>
+</div>
+<div class="h-8 w-1 rounded-full bg-slate-200/50"></div> <!-- Drag Handle Indication -->
+</div>
+<!-- Connecting line to axis visual -->
+<div class="absolute -left-4 top-1/2 w-4 h-[1px] border-t border-dashed border-primary/30"></div>
+</div>
+<!-- 09:00 - Deep Focus -->
+<div class="relative z-10 mb-4 h-32 mt-8 group">
+<!-- Current Time Indicator Line (example placement) -->
+<div class="absolute -left-[calc(3.5rem+16px)] top-12 w-[calc(100%+3.5rem+16px)] h-[1px] bg-primary z-20 flex items-center">
+<div class="w-2 h-2 rounded-full bg-primary -ml-1"></div>
+<div class="absolute right-0 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">10:15</div>
+</div>
+<div class="glass-card w-full h-full rounded-3xl p-4 flex flex-col justify-between transition-transform hover:scale-[1.01] active:scale-[0.99] cursor-grab active:cursor-grabbing relative overflow-hidden">
+<!-- Abstract decorative shape inside glass -->
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-xl"></div>
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-50 to-transparent flex items-center justify-center text-slate-700 border border-white/50 shadow-sm">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div>
+<h3 class="text-slate-900 font-bold text-base leading-tight">Deep Focus</h3>
+<p class="text-slate-500 text-xs font-medium mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 09:00 - 12:00
+                                    </p>
+</div>
+</div>
+<div class="h-8 w-1 rounded-full bg-slate-200/50"></div>
+</div>
+<div class="flex gap-2 pl-[calc(3rem+16px)]">
+<span class="px-2 py-1 rounded-lg bg-white/40 border border-white/30 text-[10px] font-semibold text-slate-600">Coding</span>
+<span class="px-2 py-1 rounded-lg bg-white/40 border border-white/30 text-[10px] font-semibold text-slate-600">Design</span>
+</div>
+</div>
+</div>
+<!-- 12:30 - Recovery -->
+<div class="relative z-10 mb-4 h-16 mt-2">
+<div class="glass-card w-full h-full rounded-3xl p-3 flex items-center justify-between transition-transform hover:scale-[1.01] active:scale-[0.99] cursor-grab active:cursor-grabbing">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-50 to-transparent flex items-center justify-center text-emerald-600 border border-white/50 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">spa</span>
+</div>
+<div>
+<h3 class="text-slate-900 font-bold text-sm leading-tight">Recovery</h3>
+<p class="text-slate-500 text-[10px] font-medium mt-0.5">12:30 - 13:30</p>
+</div>
+</div>
+</div>
+</div>
+<!-- 14:00 - Skill Acquisition -->
+<div class="relative z-10 mb-4 h-24 mt-6">
+<div class="glass-card w-full h-full rounded-3xl p-4 flex items-center justify-between transition-transform hover:scale-[1.01] active:scale-[0.99] cursor-grab active:cursor-grabbing">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-50 to-transparent flex items-center justify-center text-slate-700 border border-white/50 shadow-sm">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<div>
+<h3 class="text-slate-900 font-bold text-base leading-tight">Skill Acquisition</h3>
+<p class="text-slate-500 text-xs font-medium mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 14:00 - 15:30
+                                </p>
+</div>
+</div>
+<div class="h-8 w-1 rounded-full bg-slate-200/50"></div>
+</div>
+</div>
+<!-- 20:00 - Reflection -->
+<div class="relative z-10 mb-4 h-16 mt-[4.5rem]">
+<div class="glass-card w-full h-full rounded-3xl p-3 flex items-center justify-between transition-transform hover:scale-[1.01] active:scale-[0.99] cursor-grab active:cursor-grabbing">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-50 to-transparent flex items-center justify-center text-slate-700 border border-white/50 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">auto_stories</span>
+</div>
+<div>
+<h3 class="text-slate-900 font-bold text-sm leading-tight">Daily Reflection</h3>
+<p class="text-slate-500 text-[10px] font-medium mt-0.5">20:00 - 20:30</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Add Button (Floating in timeline) -->
+<div class="mt-4 flex justify-center pb-8">
+<button class="flex items-center gap-2 px-6 py-3 rounded-full bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Add Block
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (Primary) -->
+<div class="fixed bottom-24 right-6 z-30">
+<button class="w-14 h-14 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[28px]">edit</span>
+</button>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-40 px-4 pb-6 pt-2">
+<div class="glass-nav rounded-full h-16 px-1 flex items-center justify-between max-w-md mx-auto shadow-2xl">
+<a class="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-full text-slate-400 hover:text-slate-600 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">home</span>
+</a>
+<a class="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-full text-primary relative" href="#">
+<span class="material-symbols-outlined scale-110 font-variation-FILL">schedule</span>
+<span class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full"></span>
+</a>
+<a class="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-full text-slate-400 hover:text-slate-600 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">bar_chart</span>
+</a>
+<a class="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-full text-slate-400 hover:text-slate-600 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">school</span>
+</a>
+<a class="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-full text-slate-400 hover:text-slate-600 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">flag</span>
+</a>
+<a class="flex-1 flex flex-col items-center justify-center gap-1 h-full rounded-full text-slate-400 hover:text-slate-600 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">person</span>
+</a>
+</div>
+</nav>
+</body></html>

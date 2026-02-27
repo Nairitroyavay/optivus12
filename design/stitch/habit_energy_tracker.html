@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Optivus Habit &amp; Energy Tracker</title>
+<!-- Fonts and Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec49",
+                        "primary-dark": "#0ea633",
+                        "accent-orange": "#FF8C42",
+                        "accent-blue": "#3B82F6",
+                        "glass-border": "rgba(255, 255, 255, 0.4)",
+                        "glass-bg": "rgba(255, 255, 255, 0.25)",
+                        "text-main": "#1e293b",
+                        "text-sub": "#475569",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "1.5rem", 
+                        "xl": "2rem",
+                        "2xl": "2.5rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "glass": "0 8px 32px 0 rgba(31, 38, 135, 0.07)",
+                        "glass-sm": "0 4px 16px 0 rgba(31, 38, 135, 0.05)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Glassmorphism Utilities that Tailwind doesn't handle perfectly out of the box with just classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        
+        .glass-panel-darker {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Hide scrollbar for clean horizontal scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display antialiased text-text-main">
+<!-- Main Container with Golden-to-White Gradient Background -->
+<div class="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-b from-[#F6E6B4] via-[#faf3de] to-white pb-24">
+<!-- Background Elements (Abstract blurred shapes for depth) -->
+<div class="fixed top-[-10%] right-[-10%] h-96 w-96 rounded-full bg-primary/20 blur-[100px] pointer-events-none"></div>
+<div class="fixed top-[40%] left-[-20%] h-80 w-80 rounded-full bg-[#F6E6B4]/60 blur-[80px] pointer-events-none"></div>
+<!-- Header Area -->
+<div class="sticky top-0 z-30 pt-12 pb-2 px-6">
+<div class="flex items-center justify-between mb-6">
+<button class="glass-panel-darker rounded-full p-2 text-text-main shadow-glass-sm transition hover:bg-white/80">
+<span class="material-symbols-outlined block">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight text-text-main">Analytics</h1>
+<button class="glass-panel-darker rounded-full p-2 text-text-main shadow-glass-sm transition hover:bg-white/80">
+<span class="material-symbols-outlined block">calendar_today</span>
+</button>
+</div>
+<!-- Scrollable Segmented Control -->
+<div class="no-scrollbar flex gap-3 overflow-x-auto pb-4 pt-1 px-1 -mx-6 pl-6">
+<button class="shrink-0 rounded-full px-5 py-2.5 text-sm font-medium text-text-sub glass-panel shadow-glass-sm transition active:scale-95 whitespace-nowrap">
+                    Bad Habits
+                </button>
+<button class="shrink-0 rounded-full px-5 py-2.5 text-sm font-medium text-text-sub glass-panel shadow-glass-sm transition active:scale-95 whitespace-nowrap">
+                    Good Habits
+                </button>
+<button class="shrink-0 rounded-full px-5 py-2.5 text-sm font-medium text-text-sub glass-panel shadow-glass-sm transition active:scale-95 whitespace-nowrap">
+                    Energy
+                </button>
+<button class="shrink-0 rounded-full px-5 py-2.5 text-sm font-medium text-text-sub glass-panel shadow-glass-sm transition active:scale-95 whitespace-nowrap">
+                    Mood
+                </button>
+<button class="shrink-0 rounded-full bg-text-main px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-black/10 transition active:scale-95 whitespace-nowrap ring-2 ring-white/50">
+                    Analytics
+                </button>
+</div>
+</div>
+<!-- Main Content -->
+<main class="px-6 flex flex-col gap-6">
+<!-- Primary Chart Card -->
+<section class="glass-panel rounded-2xl p-6 shadow-glass relative overflow-hidden">
+<div class="flex items-start justify-between mb-6">
+<div>
+<h2 class="text-2xl font-bold text-text-main">Weekly Performance</h2>
+<p class="text-sm text-text-sub mt-1">Energy vs. Habits Completed</p>
+</div>
+<div class="flex items-center gap-1 bg-white/50 px-3 py-1 rounded-full border border-white/60">
+<span class="material-symbols-outlined text-primary text-sm font-bold">trending_up</span>
+<span class="text-primary font-bold text-sm">+12%</span>
+</div>
+</div>
+<!-- Combined Chart Visualization -->
+<div class="h-64 w-full relative">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between text-xs text-text-sub/40 font-medium z-0">
+<div class="border-b border-gray-400/10 w-full h-0"></div>
+<div class="border-b border-gray-400/10 w-full h-0"></div>
+<div class="border-b border-gray-400/10 w-full h-0"></div>
+<div class="border-b border-gray-400/10 w-full h-0"></div>
+<div class="border-b border-gray-400/10 w-full h-0"></div>
+</div>
+<!-- Chart Container -->
+<div class="absolute inset-0 flex items-end justify-between px-2 z-10 pt-4">
+<!-- Bars (Habits) & Line Points (Energy) -->
+<!-- Mon -->
+<div class="flex flex-col items-center gap-2 group w-8">
+<div class="relative w-full h-[140px] flex items-end justify-center">
+<div class="w-3 bg-accent-blue/80 rounded-t-lg h-[60%] group-hover:bg-accent-blue transition-colors"></div>
+<!-- Point on line chart -->
+<div class="absolute bottom-[75%] w-3 h-3 bg-primary rounded-full border-2 border-white shadow-sm z-20"></div>
+</div>
+<span class="text-xs font-semibold text-text-sub">M</span>
+</div>
+<!-- Tue -->
+<div class="flex flex-col items-center gap-2 group w-8">
+<div class="relative w-full h-[140px] flex items-end justify-center">
+<div class="w-3 bg-accent-blue/80 rounded-t-lg h-[45%] group-hover:bg-accent-blue transition-colors"></div>
+<div class="absolute bottom-[55%] w-3 h-3 bg-primary rounded-full border-2 border-white shadow-sm z-20"></div>
+</div>
+<span class="text-xs font-semibold text-text-sub">T</span>
+</div>
+<!-- Wed -->
+<div class="flex flex-col items-center gap-2 group w-8">
+<div class="relative w-full h-[140px] flex items-end justify-center">
+<div class="w-3 bg-accent-blue/80 rounded-t-lg h-[80%] group-hover:bg-accent-blue transition-colors"></div>
+<div class="absolute bottom-[85%] w-3 h-3 bg-primary rounded-full border-2 border-white shadow-sm z-20"></div>
+</div>
+<span class="text-xs font-semibold text-text-sub">W</span>
+</div>
+<!-- Thu -->
+<div class="flex flex-col items-center gap-2 group w-8">
+<div class="relative w-full h-[140px] flex items-end justify-center">
+<div class="w-3 bg-accent-blue/80 rounded-t-lg h-[70%] group-hover:bg-accent-blue transition-colors"></div>
+<div class="absolute bottom-[65%] w-3 h-3 bg-primary rounded-full border-2 border-white shadow-sm z-20"></div>
+</div>
+<span class="text-xs font-semibold text-text-sub">T</span>
+</div>
+<!-- Fri -->
+<div class="flex flex-col items-center gap-2 group w-8">
+<div class="relative w-full h-[140px] flex items-end justify-center">
+<div class="w-3 bg-accent-blue/80 rounded-t-lg h-[90%] group-hover:bg-accent-blue transition-colors"></div>
+<div class="absolute bottom-[92%] w-3 h-3 bg-primary rounded-full border-2 border-white shadow-sm z-20"></div>
+</div>
+<span class="text-xs font-semibold text-text-sub">F</span>
+</div>
+<!-- Sat -->
+<div class="flex flex-col items-center gap-2 group w-8">
+<div class="relative w-full h-[140px] flex items-end justify-center">
+<div class="w-3 bg-accent-blue/40 rounded-t-lg h-[50%] group-hover:bg-accent-blue/60 transition-colors"></div>
+<div class="absolute bottom-[60%] w-3 h-3 bg-primary/50 rounded-full border-2 border-white shadow-sm z-20"></div>
+</div>
+<span class="text-xs font-semibold text-text-sub">S</span>
+</div>
+<!-- Sun -->
+<div class="flex flex-col items-center gap-2 group w-8">
+<div class="relative w-full h-[140px] flex items-end justify-center">
+<div class="w-3 bg-accent-blue/40 rounded-t-lg h-[40%] group-hover:bg-accent-blue/60 transition-colors"></div>
+<div class="absolute bottom-[45%] w-3 h-3 bg-primary/50 rounded-full border-2 border-white shadow-sm z-20"></div>
+</div>
+<span class="text-xs font-semibold text-text-sub">S</span>
+</div>
+</div>
+<!-- SVG Line connecting dots (Simulated visual connection) -->
+<svg class="absolute inset-0 w-full h-[140px] pointer-events-none top-4 z-15 opacity-80" preserveaspectratio="none">
+<path d="M 28 35 L 75 63 L 122 21 L 169 49 L 216 11 L 263 56 L 310 77" fill="none" stroke="#13ec49" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" style="filter: drop-shadow(0px 4px 6px rgba(19, 236, 73, 0.3));"></path>
+</svg>
+</div>
+<!-- Legend -->
+<div class="flex items-center justify-center gap-6 mt-6">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary shadow-sm ring-1 ring-white"></div>
+<span class="text-xs font-medium text-text-sub">Energy Level</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-sm bg-accent-blue shadow-sm ring-1 ring-white"></div>
+<span class="text-xs font-medium text-text-sub">Habits Done</span>
+</div>
+</div>
+</section>
+<!-- Optimization Summary -->
+<div>
+<h3 class="text-lg font-bold text-text-main mb-4 px-1">Optimization Summary</h3>
+<div class="grid grid-cols-2 gap-4">
+<!-- Bad Habit Card -->
+<div class="glass-panel rounded-2xl p-5 shadow-glass group relative overflow-hidden">
+<div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-accent-orange">warning</span>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<div class="flex items-center justify-center w-10 h-10 rounded-full bg-accent-orange/10 text-accent-orange">
+<span class="material-symbols-outlined text-[20px]">smartphone</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-accent-orange">Needs Focus</span>
+<span class="text-[10px] text-text-sub uppercase tracking-wider font-bold">Bad Habit</span>
+</div>
+</div>
+<h4 class="text-sm font-bold text-text-main leading-snug mb-3">Reduce Screen Time</h4>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-bold text-text-main">4.5h</span>
+<div class="flex items-center text-accent-orange text-xs font-bold mb-1.5 bg-accent-orange/10 px-1.5 py-0.5 rounded-md">
+<span class="material-symbols-outlined text-[14px] mr-0.5">trending_up</span>
+                                +15%
+                            </div>
+</div>
+<div class="w-full bg-gray-200/50 rounded-full h-1.5 mt-3">
+<div class="bg-accent-orange h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<!-- Good Habit Card -->
+<div class="glass-panel rounded-2xl p-5 shadow-glass group relative overflow-hidden">
+<div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-primary">verified</span>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 text-primary-dark">
+<span class="material-symbols-outlined text-[20px]">water_drop</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-primary-dark">On Track</span>
+<span class="text-[10px] text-text-sub uppercase tracking-wider font-bold">Good Habit</span>
+</div>
+</div>
+<h4 class="text-sm font-bold text-text-main leading-snug mb-3">Morning Hydration</h4>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-bold text-text-main">12</span>
+<span class="text-xs font-medium text-text-sub mb-1.5">Day Streak</span>
+</div>
+<div class="flex gap-1 mt-3">
+<div class="h-1.5 w-full rounded-full bg-primary"></div>
+<div class="h-1.5 w-full rounded-full bg-primary"></div>
+<div class="h-1.5 w-full rounded-full bg-primary"></div>
+<div class="h-1.5 w-full rounded-full bg-primary/30"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Additional Detail Chart (Sparklines) -->
+<section class="glass-panel rounded-2xl p-5 shadow-glass flex items-center justify-between mb-8">
+<div class="flex items-center gap-4">
+<div class="h-12 w-12 rounded-full bg-gradient-to-tr from-blue-100 to-blue-50 flex items-center justify-center border border-white/60 shadow-sm">
+<span class="material-symbols-outlined text-blue-600">psychology</span>
+</div>
+<div>
+<h4 class="text-base font-bold text-text-main">Avg. Mood</h4>
+<span class="text-xs text-text-sub">Last 7 Days</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-xl font-bold text-text-main">8.4</span>
+<span class="text-xs font-medium text-primary block">Excellent</span>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 glass-nav pb-8 pt-4 px-6 z-40 rounded-t-[2rem]">
+<div class="flex items-center justify-around">
+<a class="flex flex-col items-center gap-1 text-text-sub/70 hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[28px] group-hover:scale-110 transition-transform">home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary relative group" href="#">
+<div class="absolute -top-12 bg-primary/20 p-3 rounded-full blur-lg opacity-50"></div>
+<span class="material-symbols-outlined text-[28px] fill-current" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<div class="w-1.5 h-1.5 rounded-full bg-primary mt-1"></div>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-sub/70 hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[28px] group-hover:scale-110 transition-transform">smart_toy</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-sub/70 hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[28px] group-hover:scale-110 transition-transform">person</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

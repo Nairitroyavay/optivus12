@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Optivus Goals Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "optivus-gold": "#F6E6B4",
+                        "charcoal": "#1A1A1A",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem", 
+                        "lg": "2rem", 
+                        "xl": "3rem", 
+                        "glass": "24px",
+                        "full": "9999px"
+                    },
+                    backdropBlur: {
+                        'xs': '2px',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Glassmorphism utility classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-button {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Gradient Background */
+        .bg-liquid-gold {
+            background: linear-gradient(180deg, #F6E6B4 0%, #FFFFFF 100%);
+        }
+
+        /* Progress Circle SVG rotation */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-charcoal overflow-hidden">
+<div class="relative flex h-screen w-full flex-col bg-liquid-gold overflow-hidden">
+<!-- Decorative abstract shape for "liquid" feel -->
+<div class="absolute top-[-10%] right-[-10%] w-[300px] h-[300px] bg-white/30 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute top-[20%] left-[-10%] w-[200px] h-[200px] bg-[#F6E6B4]/50 rounded-full blur-2xl pointer-events-none"></div>
+<!-- Header -->
+<header class="flex-none px-6 pt-12 pb-4 z-10">
+<div class="flex items-center justify-between mb-2">
+<span class="text-charcoal/60 text-sm font-medium uppercase tracking-wider">Your Focus</span>
+<button class="glass-button h-10 w-10 flex items-center justify-center rounded-full text-charcoal hover:bg-white/80 transition-colors">
+<span class="material-symbols-outlined text-[24px]">add</span>
+</button>
+</div>
+<h1 class="text-charcoal text-4xl font-extrabold tracking-tight">Goals</h1>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24 z-10 flex flex-col gap-6">
+<!-- Goal Card 1 -->
+<div class="glass-panel w-full rounded-glass p-6 relative group transition-transform active:scale-[0.98]">
+<!-- Shine effect -->
+<div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-glass pointer-events-none"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-white/60 flex items-center justify-center text-charcoal shadow-sm">
+<span class="material-symbols-outlined text-[20px]">code</span>
+</div>
+<div>
+<span class="block text-xs font-semibold text-charcoal/50 uppercase tracking-wide">Skill</span>
+<h3 class="text-xl font-bold text-charcoal leading-tight">Master Python</h3>
+</div>
+</div>
+<!-- Circular Progress -->
+<div class="relative h-12 w-12 flex items-center justify-center">
+<svg class="h-full w-full" height="48" viewbox="0 0 48 48" width="48">
+<circle class="text-charcoal/10" cx="24" cy="24" fill="transparent" r="18" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-primary progress-ring__circle" cx="24" cy="24" fill="transparent" r="18" stroke="currentColor" stroke-dasharray="113" stroke-dashoffset="39.55" stroke-linecap="round" stroke-width="4"></circle>
+</svg>
+<span class="absolute text-[10px] font-bold text-primary">65%</span>
+</div>
+</div>
+<div class="space-y-4 relative z-10">
+<div class="bg-charcoal/5 rounded-xl p-3 border border-white/20">
+<div class="flex gap-2 items-start">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">spark</span>
+<p class="text-sm text-charcoal/80 font-medium leading-relaxed">
+<span class="font-bold text-charcoal">Suggestion:</span> Complete 2 modules on Pandas library this week to stay on track.
+                            </p>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-2 border-t border-charcoal/5">
+<span class="material-symbols-outlined text-charcoal/40 text-[16px]">flag</span>
+<p class="text-xs font-bold text-charcoal/60">Next: <span class="text-primary">Data Visualization Project</span></p>
+</div>
+</div>
+</div>
+<!-- Goal Card 2 -->
+<div class="glass-panel w-full rounded-glass p-6 relative group transition-transform active:scale-[0.98]">
+<div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-glass pointer-events-none"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-white/60 flex items-center justify-center text-charcoal shadow-sm">
+<span class="material-symbols-outlined text-[20px]">fitness_center</span>
+</div>
+<div>
+<span class="block text-xs font-semibold text-charcoal/50 uppercase tracking-wide">Health</span>
+<h3 class="text-xl font-bold text-charcoal leading-tight">Marathon Training</h3>
+</div>
+</div>
+<!-- Circular Progress -->
+<div class="relative h-12 w-12 flex items-center justify-center">
+<svg class="h-full w-full" height="48" viewbox="0 0 48 48" width="48">
+<circle class="text-charcoal/10" cx="24" cy="24" fill="transparent" r="18" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-primary progress-ring__circle" cx="24" cy="24" fill="transparent" r="18" stroke="currentColor" stroke-dasharray="113" stroke-dashoffset="79.1" stroke-linecap="round" stroke-width="4"></circle>
+</svg>
+<span class="absolute text-[10px] font-bold text-primary">30%</span>
+</div>
+</div>
+<div class="space-y-4 relative z-10">
+<div class="bg-charcoal/5 rounded-xl p-3 border border-white/20">
+<div class="flex gap-2 items-start">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">spark</span>
+<p class="text-sm text-charcoal/80 font-medium leading-relaxed">
+<span class="font-bold text-charcoal">Recovery:</span> Based on your sleep score (62), aim for a lighter 5k run today.
+                            </p>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-2 border-t border-charcoal/5">
+<span class="material-symbols-outlined text-charcoal/40 text-[16px]">flag</span>
+<p class="text-xs font-bold text-charcoal/60">Next: <span class="text-primary">10k Run Saturday</span></p>
+</div>
+</div>
+</div>
+<!-- Goal Card 3 -->
+<div class="glass-panel w-full rounded-glass p-6 relative group transition-transform active:scale-[0.98]">
+<div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-glass pointer-events-none"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-white/60 flex items-center justify-center text-charcoal shadow-sm">
+<span class="material-symbols-outlined text-[20px]">savings</span>
+</div>
+<div>
+<span class="block text-xs font-semibold text-charcoal/50 uppercase tracking-wide">Finance</span>
+<h3 class="text-xl font-bold text-charcoal leading-tight">Save for House</h3>
+</div>
+</div>
+<!-- Circular Progress -->
+<div class="relative h-12 w-12 flex items-center justify-center">
+<svg class="h-full w-full" height="48" viewbox="0 0 48 48" width="48">
+<circle class="text-charcoal/10" cx="24" cy="24" fill="transparent" r="18" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-primary progress-ring__circle" cx="24" cy="24" fill="transparent" r="18" stroke="currentColor" stroke-dasharray="113" stroke-dashoffset="16.95" stroke-linecap="round" stroke-width="4"></circle>
+</svg>
+<span class="absolute text-[10px] font-bold text-primary">85%</span>
+</div>
+</div>
+<div class="space-y-4 relative z-10">
+<div class="bg-charcoal/5 rounded-xl p-3 border border-white/20">
+<div class="flex gap-2 items-start">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">spark</span>
+<p class="text-sm text-charcoal/80 font-medium leading-relaxed">
+<span class="font-bold text-charcoal">Great job!</span> You're $200 above your monthly target. Consider moving it to HYSA.
+                            </p>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-2 border-t border-charcoal/5">
+<span class="material-symbols-outlined text-charcoal/40 text-[16px]">flag</span>
+<p class="text-xs font-bold text-charcoal/60">Next: <span class="text-primary">Review Q3 Budget</span></p>
+</div>
+</div>
+</div>
+<div class="h-8"></div> <!-- Spacing for bottom nav -->
+</main>
+<!-- Bottom Navigation -->
+<nav class="glass-nav absolute bottom-0 left-0 w-full pb-6 pt-3 px-6 z-20">
+<div class="flex justify-between items-end">
+<a class="flex flex-col items-center gap-1 group w-16" href="#">
+<span class="material-symbols-outlined text-charcoal/40 group-hover:text-primary transition-colors text-[28px]">home</span>
+<span class="text-[10px] font-medium text-charcoal/40 group-hover:text-primary">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 group w-16" href="#">
+<div class="relative">
+<span class="material-symbols-outlined text-primary text-[28px] font-variation-settings-FILL-1">target</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+</div>
+<span class="text-[10px] font-bold text-primary">Goals</span>
+</a>
+<a class="flex flex-col items-center gap-1 group w-16" href="#">
+<span class="material-symbols-outlined text-charcoal/40 group-hover:text-primary transition-colors text-[28px]">smart_toy</span>
+<span class="text-[10px] font-medium text-charcoal/40 group-hover:text-primary">Insights</span>
+</a>
+<a class="flex flex-col items-center gap-1 group w-16" href="#">
+<span class="material-symbols-outlined text-charcoal/40 group-hover:text-primary transition-colors text-[28px]">person</span>
+<span class="text-[10px] font-medium text-charcoal/40 group-hover:text-primary">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

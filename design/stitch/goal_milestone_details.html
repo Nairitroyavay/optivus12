@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Goal Milestone Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "secondary": "#22c55e", 
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem", 
+                        "lg": "1.5rem", 
+                        "xl": "2rem", 
+                        "2xl": "2.5rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'glass-sm': '0 4px 16px 0 rgba(31, 38, 135, 0.05)',
+                        'glow': '0 0 20px rgba(19, 127, 236, 0.3)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        
+        .glass-panel-darker {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+        }
+
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.2s ease;
+        }
+
+        .glass-btn:active {
+            background: rgba(255, 255, 255, 0.7);
+            transform: scale(0.95);
+        }
+
+        .glass-tab-bar {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(135deg, #137fec 0%, #22c55e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* SVG Circle Animation Placeholder */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-gradient-to-b from-amber-50 via-white to-white min-h-screen text-slate-800 antialiased selection:bg-primary/20">
+<!-- Main Container -->
+<div class="relative mx-auto flex h-screen w-full max-w-md flex-col overflow-hidden bg-transparent shadow-2xl sm:rounded-[3rem] sm:border-[8px] sm:border-slate-900 sm:h-[90vh] sm:mt-[5vh]">
+<!-- Header -->
+<header class="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-6 pt-8">
+<button class="glass-btn flex h-12 w-12 items-center justify-center rounded-full text-slate-700 shadow-glass-sm hover:text-primary">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</button>
+<button class="glass-btn flex h-12 w-12 items-center justify-center rounded-full text-slate-700 shadow-glass-sm hover:text-primary">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_horiz</span>
+</button>
+</header>
+<!-- Scrollable Content -->
+<main class="no-scrollbar flex-1 overflow-y-auto pb-28 pt-24 px-6">
+<!-- Hero Progress Card -->
+<div class="glass-panel relative mb-10 flex flex-col items-center rounded-3xl p-8 shadow-glass transition-transform hover:scale-[1.01]">
+<div class="mb-6 flex flex-col items-center text-center">
+<h1 class="text-2xl font-bold tracking-tight text-slate-900">Marathon Training</h1>
+<p class="text-sm font-medium text-slate-500">Target: Oct 15, 2023</p>
+</div>
+<!-- Circular Progress -->
+<div class="relative flex h-48 w-48 items-center justify-center">
+<!-- SVG Ring -->
+<svg class="h-full w-full" viewbox="0 0 100 100">
+<!-- Track -->
+<circle class="text-slate-200" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" stroke-width="8"></circle>
+<!-- Progress (approx 65%) -->
+<circle class="progress-ring__circle text-primary drop-shadow-lg" cx="50" cy="50" fill="transparent" r="42" stroke="url(#gradient)" stroke-dasharray="263.89" stroke-dashoffset="92.36" stroke-linecap="round" stroke-width="8"></circle>
+<defs>
+<lineargradient id="gradient" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#137fec"></stop>
+<stop offset="100%" stop-color="#22c55e"></stop>
+</lineargradient>
+</defs>
+</svg>
+<!-- Centered Text -->
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-4xl font-extrabold text-gradient">65%</span>
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Complete</span>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="mt-8 flex w-full justify-between px-4">
+<div class="flex flex-col items-center gap-1">
+<span class="text-lg font-bold text-slate-800">14</span>
+<span class="text-xs text-slate-500">Days Left</span>
+</div>
+<div class="h-10 w-px bg-slate-200"></div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-lg font-bold text-slate-800">42km</span>
+<span class="text-xs text-slate-500">Distance</span>
+</div>
+<div class="h-10 w-px bg-slate-200"></div>
+<div class="flex flex-col items-center gap-1">
+<span class="text-lg font-bold text-slate-800">3/5</span>
+<span class="text-xs text-slate-500">Milestones</span>
+</div>
+</div>
+</div>
+<!-- Timeline Section -->
+<div class="relative">
+<h2 class="mb-6 px-2 text-lg font-bold text-slate-800">Milestones</h2>
+<!-- Vertical Line -->
+<div class="absolute left-[27px] top-12 h-[calc(100%-60px)] w-0.5 bg-slate-200/80"></div>
+<!-- Milestone 1: Completed -->
+<div class="group relative mb-6 flex items-start gap-4">
+<div class="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white shadow-md ring-4 ring-white/50">
+<span class="material-symbols-outlined text-secondary" style="font-size: 28px;">check_circle</span>
+</div>
+<div class="glass-panel flex-1 rounded-2xl p-4 shadow-glass-sm transition-all group-hover:bg-white/80">
+<div class="mb-1 flex items-center justify-between">
+<h3 class="font-bold text-slate-800">Base Conditioning</h3>
+<span class="text-xs font-medium text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">Done</span>
+</div>
+<p class="text-sm text-slate-500 leading-snug">Built initial stamina with 5k runs three times a week.</p>
+</div>
+</div>
+<!-- Milestone 2: Completed -->
+<div class="group relative mb-6 flex items-start gap-4">
+<div class="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white shadow-md ring-4 ring-white/50">
+<span class="material-symbols-outlined text-secondary" style="font-size: 28px;">check_circle</span>
+</div>
+<div class="glass-panel flex-1 rounded-2xl p-4 shadow-glass-sm transition-all group-hover:bg-white/80">
+<div class="mb-1 flex items-center justify-between">
+<h3 class="font-bold text-slate-800">First 10k Run</h3>
+<span class="text-xs font-medium text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">Done</span>
+</div>
+<p class="text-sm text-slate-500 leading-snug">Achieved sub-60 minute pace on the first 10k attempt.</p>
+</div>
+</div>
+<!-- Milestone 3: In Progress (Active) -->
+<div class="group relative mb-6 flex items-start gap-4">
+<div class="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary shadow-glow ring-4 ring-primary/20">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">fitness_center</span>
+</div>
+<div class="glass-panel-darker flex-1 scale-[1.02] rounded-2xl border-primary/20 p-5 shadow-glass ring-1 ring-primary/10">
+<div class="mb-2 flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-900">Half-Marathon Dist.</h3>
+<span class="animate-pulse text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">Active</span>
+</div>
+<p class="mb-3 text-sm text-slate-600 leading-relaxed">Increasing weekly mileage to 35km. Focus on nutrition and hydration strategy.</p>
+<!-- Sub-task progress bar inside card -->
+<div class="mt-2">
+<div class="flex justify-between mb-1 text-xs font-medium text-slate-500">
+<span>Progress</span>
+<span>18 / 21 km</span>
+</div>
+<div class="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+<div class="h-full rounded-full bg-primary w-[85%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Milestone 4: Locked -->
+<div class="group relative mb-6 flex items-start gap-4 opacity-60">
+<div class="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-slate-100 ring-4 ring-white/50">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 24px;">lock</span>
+</div>
+<div class="glass-panel flex-1 rounded-2xl p-4 shadow-glass-sm grayscale">
+<div class="mb-1 flex items-center justify-between">
+<h3 class="font-bold text-slate-700">Taper Week</h3>
+<span class="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Locked</span>
+</div>
+<p class="text-sm text-slate-500 leading-snug">Reducing volume to let muscles recover before race day.</p>
+</div>
+</div>
+<!-- Milestone 5: Locked -->
+<div class="group relative mb-6 flex items-start gap-4 opacity-60">
+<div class="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-slate-100 ring-4 ring-white/50">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 24px;">lock</span>
+</div>
+<div class="glass-panel flex-1 rounded-2xl p-4 shadow-glass-sm grayscale">
+<div class="mb-1 flex items-center justify-between">
+<h3 class="font-bold text-slate-700">Race Day</h3>
+<span class="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Locked</span>
+</div>
+<p class="text-sm text-slate-500 leading-snug">The big day! Warm up, stay focused, and enjoy the run.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Glass Tab Bar -->
+<nav class="glass-tab-bar absolute bottom-0 left-0 right-0 z-40 flex h-24 items-start justify-around px-6 pt-4 pb-8">
+<a class="group flex flex-col items-center gap-1 text-slate-400 transition-colors hover:text-primary" href="#">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform duration-200" style="font-size: 28px;">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="group flex flex-col items-center gap-1 text-primary" href="#">
+<div class="relative">
+<span class="material-symbols-outlined" style="font-size: 28px; font-variation-settings: 'FILL' 1;">flag</span>
+<span class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-secondary ring-2 ring-white"></span>
+</div>
+<span class="text-[10px] font-bold">Goals</span>
+</a>
+<a class="group flex flex-col items-center gap-1 text-slate-400 transition-colors hover:text-primary" href="#">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform duration-200" style="font-size: 28px;">bar_chart</span>
+<span class="text-[10px] font-medium">Analytics</span>
+</a>
+<a class="group flex flex-col items-center gap-1 text-slate-400 transition-colors hover:text-primary" href="#">
+<span class="material-symbols-outlined group-hover:-translate-y-1 transition-transform duration-200" style="font-size: 28px;">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</nav>
+</div>
+</body></html>
