@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
-import 'package:optivus/features/onboarding/data/onboarding_data.dart';
-import 'package:optivus/features/onboarding/data/user_preferences_provider.dart';
+import 'package:optivus/features/onboarding/domain/models/onboarding_data.dart';
+import 'package:optivus/features/onboarding/presentation/mappers/onboarding_ui_mappers.dart';
+import 'package:optivus/features/onboarding/application/user_preferences_provider.dart';
 
 class StepDailySchedule extends ConsumerStatefulWidget {
   final VoidCallback onNext;
@@ -22,7 +23,9 @@ class _StepDailyScheduleState extends ConsumerState<StepDailySchedule> {
     ScheduleBlock block,
     bool isStart,
   ) async {
-    final initialTime = isStart ? block.startTime : block.endTime;
+    final initialTime = isStart
+        ? OnboardingUiMappers.scheduleBlockStartTime(block)
+        : OnboardingUiMappers.scheduleBlockEndTime(block);
     final pickedTime = await showTimePicker(
       context: context,
       initialTime: initialTime,
@@ -46,13 +49,11 @@ class _StepDailyScheduleState extends ConsumerState<StepDailySchedule> {
     );
 
     if (pickedTime != null) {
-      final newBlock = ScheduleBlock(
-        label: block.label,
-        icon: block.icon,
-        color: block.color,
-        startTime: isStart ? pickedTime : block.startTime,
-        endTime: isStart ? block.endTime : pickedTime,
-        isEnabled: block.isEnabled,
+      final newBlock = block.copyWith(
+        startHour: isStart ? pickedTime.hour : null,
+        startMinute: isStart ? pickedTime.minute : null,
+        endHour: isStart ? null : pickedTime.hour,
+        endMinute: isStart ? null : pickedTime.minute,
       );
       ref
           .read(userPreferencesProvider.notifier)
@@ -61,14 +62,7 @@ class _StepDailyScheduleState extends ConsumerState<StepDailySchedule> {
   }
 
   void _toggleBlock(int index, ScheduleBlock block) {
-    final newBlock = ScheduleBlock(
-      label: block.label,
-      icon: block.icon,
-      color: block.color,
-      startTime: block.startTime,
-      endTime: block.endTime,
-      isEnabled: !block.isEnabled,
-    );
+    final newBlock = block.copyWith(isEnabled: !block.isEnabled);
     ref
         .read(userPreferencesProvider.notifier)
         .updateScheduleBlock(index, newBlock);
@@ -111,6 +105,16 @@ class _StepDailyScheduleState extends ConsumerState<StepDailySchedule> {
               itemBuilder: (context, index) {
                 final block = state.schedule[index];
                 final isEnabled = block.isEnabled;
+                final blockColor = OnboardingUiMappers.scheduleBlockColor(
+                  block,
+                );
+                final blockIcon = OnboardingUiMappers.iconFromKey(
+                  block.iconKey,
+                );
+                final startTime = OnboardingUiMappers.scheduleBlockStartTime(
+                  block,
+                );
+                final endTime = OnboardingUiMappers.scheduleBlockEndTime(block);
 
                 return Opacity(
                   opacity: isEnabled ? 1.0 : 0.5,
@@ -120,7 +124,7 @@ class _StepDailyScheduleState extends ConsumerState<StepDailySchedule> {
                       Container(
                         width: 2,
                         height: 80,
-                        color: block.color.withValues(alpha: 0.3),
+                        color: blockColor.withValues(alpha: 0.3),
                       ),
                       const SizedBox(width: 16),
 
@@ -146,12 +150,10 @@ class _StepDailyScheduleState extends ConsumerState<StepDailySchedule> {
                                     width: 40,
                                     height: 40,
                                     decoration: BoxDecoration(
-                                      color: block.color.withValues(
-                                        alpha: 0.15,
-                                      ),
+                                      color: blockColor.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Icon(block.icon, color: block.color),
+                                    child: Icon(blockIcon, color: blockColor),
                                   ),
                                   const SizedBox(width: 16),
 
@@ -182,11 +184,11 @@ class _StepDailyScheduleState extends ConsumerState<StepDailySchedule> {
                                                     )
                                                   : null,
                                               child: Text(
-                                                block.startTime.format(context),
+                                                startTime.format(context),
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
-                                                  color: block.color,
+                                                  color: blockColor,
                                                   decoration: isEnabled
                                                       ? TextDecoration.underline
                                                       : null,
@@ -211,11 +213,11 @@ class _StepDailyScheduleState extends ConsumerState<StepDailySchedule> {
                                                     )
                                                   : null,
                                               child: Text(
-                                                block.endTime.format(context),
+                                                endTime.format(context),
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
-                                                  color: block.color,
+                                                  color: blockColor,
                                                   decoration: isEnabled
                                                       ? TextDecoration.underline
                                                       : null,
@@ -233,8 +235,8 @@ class _StepDailyScheduleState extends ConsumerState<StepDailySchedule> {
                                     value: isEnabled,
                                     onChanged: (_) =>
                                         _toggleBlock(index, block),
-                                    activeThumbColor: block.color,
-                                    activeTrackColor: block.color.withValues(
+                                    activeThumbColor: blockColor,
+                                    activeTrackColor: blockColor.withValues(
                                       alpha: 0.3,
                                     ),
                                   ),

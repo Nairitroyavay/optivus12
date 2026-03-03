@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
 import 'package:optivus/core/widgets/liquid_glass_card.dart';
-import 'package:optivus/features/onboarding/data/onboarding_data.dart';
-import 'package:optivus/features/onboarding/data/user_preferences_provider.dart';
+import 'package:optivus/features/onboarding/domain/models/onboarding_data.dart';
+import 'package:optivus/features/onboarding/presentation/mappers/onboarding_ui_mappers.dart';
+import 'package:optivus/features/onboarding/application/user_preferences_provider.dart';
 
 class StepCoachSelection extends ConsumerWidget {
   final VoidCallback onNext;
@@ -61,7 +62,7 @@ class StepCoachSelection extends ConsumerWidget {
                 return LiquidGlassCard(
                   label: pers.label,
                   subtitle: pers.description,
-                  icon: pers.icon,
+                  icon: OnboardingUiMappers.coachPersonalityIcon(pers),
                   isSelected: state.coachPersonality == pers,
                   onTap: () => ref
                       .read(userPreferencesProvider.notifier)

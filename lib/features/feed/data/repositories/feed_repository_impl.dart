@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:optivus/core/failures/failure.dart';
 import 'package:optivus/core/logger/app_logger.dart';
@@ -12,14 +13,17 @@ class FeedRepositoryImpl implements FeedRepository {
   FeedRepositoryImpl(this.remote);
 
   @override
-  Future<Either<Failure, DailySummary>> getDailySummary() async {
+  Future<Either<Failure, DailySummary>> getDailySummary(String uid) async {
     try {
-      final json = await remote.fetchDailySummary();
+      final json = await remote.fetchDailySummary(uid);
       final model = DailySummaryModel.fromJson(json);
       return Right(model.toEntity());
+    } on FirebaseException catch (e) {
+      AppLogger.error('Firestore query failed for daily summary', e);
+      return Left(ServerFailure('Failed to load your daily summary.'));
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get daily summary', e, stackTrace);
-      return Left(ServerFailure());
+      return Left(ServerFailure('An unexpected error occurred.'));
     }
   }
 }

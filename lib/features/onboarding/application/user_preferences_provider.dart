@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:optivus/features/onboarding/data/onboarding_data.dart';
+import 'package:optivus/features/onboarding/domain/models/onboarding_data.dart';
 
 class UserPreferencesState {
   final List<ImprovementArea> improvementAreas;
@@ -31,36 +31,44 @@ class UserPreferencesState {
     this.cachedStep = 0,
   });
 
-  /// The default schedule payload exactly as in the original model
+  /// The default schedule payload — uses integers and string keys, no Flutter types.
   static List<ScheduleBlock> defaultSchedule() {
     return [
       ScheduleBlock(
         label: 'Sleep',
-        icon: Icons.bedtime_rounded,
-        color: const Color(0xFF6B7280),
-        startTime: const TimeOfDay(hour: 22, minute: 0),
-        endTime: const TimeOfDay(hour: 6, minute: 30),
+        iconKey: 'bedtime',
+        colorHex: '#6B7280',
+        startHour: 22,
+        startMinute: 0,
+        endHour: 6,
+        endMinute: 30,
       ),
       ScheduleBlock(
         label: 'Classes',
-        icon: Icons.school_rounded,
-        color: const Color(0xFFFACC15),
-        startTime: const TimeOfDay(hour: 9, minute: 0),
-        endTime: const TimeOfDay(hour: 12, minute: 0),
+        iconKey: 'school',
+        colorHex: '#FACC15',
+        startHour: 9,
+        startMinute: 0,
+        endHour: 12,
+        endMinute: 0,
       ),
       ScheduleBlock(
         label: 'Work',
-        icon: Icons.work_rounded,
-        color: const Color(0xFFEF4444),
-        startTime: const TimeOfDay(hour: 13, minute: 0),
-        endTime: const TimeOfDay(hour: 17, minute: 0),
+        iconKey: 'work',
+        colorHex: '#EF4444',
+        startHour: 13,
+        startMinute: 0,
+        endHour: 17,
+        endMinute: 0,
       ),
       ScheduleBlock(
         label: 'Gym',
-        icon: Icons.fitness_center_rounded,
-        color: const Color(0xFF10B981),
-        startTime: const TimeOfDay(hour: 17, minute: 30),
-        endTime: const TimeOfDay(hour: 19, minute: 0),
+        iconKey: 'fitness_center',
+        colorHex: '#10B981',
+        startHour: 17,
+        startMinute: 30,
+        endHour: 19,
+        endMinute: 0,
       ),
     ];
   }
@@ -95,7 +103,8 @@ class UserPreferencesState {
     );
   }
 
-  /// Convert to Map for Supabase `user_preferences` table and SharedPreferences
+  /// Convert to Map for Firestore and SharedPreferences.
+  /// Uses platform-agnostic string keys — no Flutter icon codepoints or color ints.
   Map<String, dynamic> toJson() {
     return {
       'improvement_areas': improvementAreas.map((e) => e.name).toList(),
@@ -113,12 +122,12 @@ class UserPreferencesState {
           .map(
             (b) => {
               'label': b.label,
-              'start':
-                  '${b.startTime.hour}:${b.startTime.minute.toString().padLeft(2, '0')}',
-              'end':
-                  '${b.endTime.hour}:${b.endTime.minute.toString().padLeft(2, '0')}',
-              'icon_code': b.icon.codePoint,
-              'color_value': b.color.toARGB32(),
+              'start_hour': b.startHour,
+              'start_minute': b.startMinute,
+              'end_hour': b.endHour,
+              'end_minute': b.endMinute,
+              'icon_key': b.iconKey,
+              'color_hex': b.colorHex,
             },
           )
           .toList(),
@@ -129,7 +138,8 @@ class UserPreferencesState {
     };
   }
 
-  /// Factory from JSON (for cache hydration)
+  /// Factory from JSON (for cache hydration).
+  /// Parses platform-agnostic string keys.
   factory UserPreferencesState.fromJson(Map<String, dynamic> json) {
     try {
       // Parse improvement areas
@@ -182,27 +192,18 @@ class UserPreferencesState {
         }
       }
 
-      // Parse schedule
+      // Parse schedule — now uses integer hours/minutes and string keys
       final schedList =
           (json['schedule'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       final parsedSchedule = schedList.map((s) {
-        final startParts = (s['start'] as String).split(':');
-        final endParts = (s['end'] as String).split(':');
         return ScheduleBlock(
           label: s['label'] ?? 'Unknown',
-          icon: IconData(
-            s['icon_code'] ?? Icons.event.codePoint,
-            fontFamily: 'MaterialIcons',
-          ),
-          color: Color(s['color_value'] ?? 0xFF6B7280),
-          startTime: TimeOfDay(
-            hour: int.parse(startParts[0]),
-            minute: int.parse(startParts[1]),
-          ),
-          endTime: TimeOfDay(
-            hour: int.parse(endParts[0]),
-            minute: int.parse(endParts[1]),
-          ),
+          iconKey: s['icon_key'] ?? 'event',
+          colorHex: s['color_hex'] ?? '#6B7280',
+          startHour: s['start_hour'] ?? 0,
+          startMinute: s['start_minute'] ?? 0,
+          endHour: s['end_hour'] ?? 0,
+          endMinute: s['end_minute'] ?? 0,
           isEnabled: true,
         );
       }).toList();
@@ -284,13 +285,13 @@ class UserPreferencesNotifier extends Notifier<UserPreferencesState> {
   }
 
   /// Update the current step in cache (so if OS kills app, they remain on the tab)
-  void setCachedStep(int step) {
+  Future<void> setCachedStep(int step) async {
     state = state.copyWith(cachedStep: step);
-    _saveToCache();
+    await _saveToCache();
   }
 
   // --- Step 2 Mutations ---
-  void toggleImprovementArea(ImprovementArea area) {
+  Future<void> toggleImprovementArea(ImprovementArea area) async {
     if (state.improvementAreas.contains(area)) {
       state = state.copyWith(
         improvementAreas: state.improvementAreas
@@ -302,11 +303,11 @@ class UserPreferencesNotifier extends Notifier<UserPreferencesState> {
         improvementAreas: [...state.improvementAreas, area],
       );
     }
-    _saveToCache();
+    await _saveToCache();
   }
 
   // --- Step 3 Mutations ---
-  void toggleIdentityGoal(IdentityGoal goal) {
+  Future<void> toggleIdentityGoal(IdentityGoal goal) async {
     if (state.identityGoals.contains(goal)) {
       state = state.copyWith(
         identityGoals: state.identityGoals.where((g) => g != goal).toList(),
@@ -314,19 +315,19 @@ class UserPreferencesNotifier extends Notifier<UserPreferencesState> {
     } else {
       state = state.copyWith(identityGoals: [...state.identityGoals, goal]);
     }
-    _saveToCache();
+    await _saveToCache();
   }
 
-  void setCustomGoal(String? goal) {
+  Future<void> setCustomGoal(String? goal) async {
     state = state.copyWith(
       customGoal: goal,
       clearCustomGoal: goal == null || goal.isEmpty,
     );
-    _saveToCache();
+    await _saveToCache();
   }
 
   // --- Step 4 Mutations ---
-  void toggleGoodHabit(GoodHabit habit) {
+  Future<void> toggleGoodHabit(GoodHabit habit) async {
     if (state.goodHabits.contains(habit)) {
       state = state.copyWith(
         goodHabits: state.goodHabits.where((h) => h != habit).toList(),
@@ -334,11 +335,11 @@ class UserPreferencesNotifier extends Notifier<UserPreferencesState> {
     } else {
       state = state.copyWith(goodHabits: [...state.goodHabits, habit]);
     }
-    _saveToCache();
+    await _saveToCache();
   }
 
   // --- Step 5 Mutations ---
-  void toggleBadHabit(BadHabit habit) {
+  Future<void> toggleBadHabit(BadHabit habit) async {
     if (state.badHabits.contains(habit)) {
       state = state.copyWith(
         badHabits: state.badHabits.where((h) => h != habit).toList(),
@@ -346,52 +347,52 @@ class UserPreferencesNotifier extends Notifier<UserPreferencesState> {
     } else {
       state = state.copyWith(badHabits: [...state.badHabits, habit]);
     }
-    _saveToCache();
+    await _saveToCache();
   }
 
-  void addCustomBadHabit(String habit) {
+  Future<void> addCustomBadHabit(String habit) async {
     if (!state.customBadHabits.contains(habit)) {
       state = state.copyWith(
         customBadHabits: [...state.customBadHabits, habit],
       );
-      _saveToCache();
+      await _saveToCache();
     }
   }
 
-  void removeCustomBadHabit(String habit) {
+  Future<void> removeCustomBadHabit(String habit) async {
     state = state.copyWith(
       customBadHabits: state.customBadHabits.where((h) => h != habit).toList(),
     );
-    _saveToCache();
+    await _saveToCache();
   }
 
   // --- Step 6 Mutations ---
-  void updateScheduleBlock(int index, ScheduleBlock block) {
+  Future<void> updateScheduleBlock(int index, ScheduleBlock block) async {
     final newSchedule = List<ScheduleBlock>.from(state.schedule);
     newSchedule[index] = block;
     state = state.copyWith(schedule: newSchedule);
-    _saveToCache();
+    await _saveToCache();
   }
 
   // --- Step 7 Mutations ---
-  void setCoachRelationship(CoachRelationship relation) {
+  Future<void> setCoachRelationship(CoachRelationship relation) async {
     state = state.copyWith(coachRelationship: relation);
-    _saveToCache();
+    await _saveToCache();
   }
 
   // --- Step 8 Mutations ---
-  void setCoachPersonality(CoachPersonality personality) {
+  Future<void> setCoachPersonality(CoachPersonality personality) async {
     state = state.copyWith(coachPersonality: personality);
-    _saveToCache();
+    await _saveToCache();
   }
 
   // --- Step 9 Mutations ---
-  void setCoachName(String? name) {
+  Future<void> setCoachName(String? name) async {
     state = state.copyWith(
       coachName: name,
       clearCoachName: name == null || name.isEmpty,
     );
-    _saveToCache();
+    await _saveToCache();
   }
 
   /// Call this when finishing onboarding

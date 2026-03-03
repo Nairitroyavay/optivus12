@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/theme/app_gradients.dart';
 import 'package:optivus/core/auth/auth_session_provider.dart';
-import 'package:optivus/features/onboarding/data/user_preferences_provider.dart';
+import 'package:optivus/features/onboarding/application/user_preferences_provider.dart';
 import 'package:optivus/features/onboarding/presentation/widgets/onboarding_header.dart';
 import 'package:optivus/features/onboarding/presentation/steps/step_welcome.dart';
 import 'package:optivus/features/onboarding/presentation/steps/step_improvement_areas.dart';
@@ -44,6 +44,8 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> {
     // Jump to the cached step if any
     final savedStep = ref.read(userPreferencesProvider).cachedStep;
     if (savedStep > 0 && savedStep < _totalPages && mounted) {
+      // Dispose old controller before creating a new one to prevent leak.
+      _pageController.dispose();
       _pageController = PageController(
         initialPage: savedStep,
         viewportFraction: 1.0,
@@ -83,15 +85,22 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> {
   }
 
   void _finish() async {
-    // TODO: Save final selection data to Supabase user_preferences table
-    // (This should be done inside userPreferencesProvider in the next phase)
+    try {
+      // 1. Mark onboarding complete: writes DB first, then cache, then state.
+      //    This triggers AppRouter redirect.
+      await ref.read(authSessionProvider.notifier).completeOnboarding();
 
-    // Clear the local step cache so if they restart, they don't jump to step 10
-    await ref.read(userPreferencesProvider.notifier).clearCache();
-
-    // Mark onboarding complete in AuthSessionProvider
-    // This updates SharedPreferences, the Supabase profiles table, AND triggers AppRouter redirect
-    await ref.read(authSessionProvider.notifier).completeOnboarding();
+      // 2. Only clear step cache AFTER successful DB persistence.
+      await ref.read(userPreferencesProvider.notifier).clearCache();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save your preferences. Please try again.'),
+          ),
+        );
+      }
+    }
   }
 
   @override

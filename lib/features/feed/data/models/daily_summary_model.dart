@@ -22,9 +22,10 @@ class DailySummaryModel {
       caloriesBurned: json['calories'] ?? 0,
       activeMinutes: json['minutes'] ?? 0,
       insightMessage: json['insight'] ?? '',
-      taskProgress: (json['taskProgress'] ?? 0.0).toDouble(),
-      tasksCompleted: json['tasksCompleted'] ?? 0,
-      tasksTotal: json['tasksTotal'] ?? 0,
+      taskProgress: (json['task_progress'] ?? json['taskProgress'] ?? 0.0)
+          .toDouble(),
+      tasksCompleted: json['tasks_completed'] ?? json['tasksCompleted'] ?? 0,
+      tasksTotal: json['tasks_total'] ?? json['tasksTotal'] ?? 0,
     );
   }
 

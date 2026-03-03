@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
-import 'package:optivus/features/onboarding/data/onboarding_data.dart';
-import 'package:optivus/features/onboarding/data/user_preferences_provider.dart';
+import 'package:optivus/features/onboarding/domain/models/onboarding_data.dart';
+import 'package:optivus/features/onboarding/presentation/mappers/onboarding_ui_mappers.dart';
+import 'package:optivus/features/onboarding/application/user_preferences_provider.dart';
 
 class StepBadHabits extends ConsumerStatefulWidget {
   final VoidCallback onNext;
@@ -81,7 +82,9 @@ class _StepBadHabitsState extends ConsumerState<StepBadHabits> {
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: isOn
-                                ? habit.color.withValues(alpha: 0.4)
+                                ? OnboardingUiMappers.badHabitColor(
+                                    habit,
+                                  ).withValues(alpha: 0.4)
                                 : Colors.white.withValues(alpha: 0.5),
                           ),
                         ),
@@ -91,13 +94,15 @@ class _StepBadHabitsState extends ConsumerState<StepBadHabits> {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: habit.color.withValues(alpha: 0.15),
+                                color: OnboardingUiMappers.badHabitColor(
+                                  habit,
+                                ).withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                habit.icon,
+                                OnboardingUiMappers.badHabitIcon(habit),
                                 size: 18,
-                                color: habit.color,
+                                color: OnboardingUiMappers.badHabitColor(habit),
                               ),
                             ),
                             const SizedBox(width: 16),

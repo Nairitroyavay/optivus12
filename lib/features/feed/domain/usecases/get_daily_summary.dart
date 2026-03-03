@@ -8,7 +8,7 @@ class GetDailySummary {
 
   GetDailySummary(this.repository);
 
-  Future<Either<Failure, DailySummary>> call() {
-    return repository.getDailySummary();
+  Future<Either<Failure, DailySummary>> call(String uid) {
+    return repository.getDailySummary(uid);
   }
 }

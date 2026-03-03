@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
-import 'package:optivus/features/onboarding/data/onboarding_data.dart';
-import 'package:optivus/features/onboarding/data/user_preferences_provider.dart';
+import 'package:optivus/features/onboarding/domain/models/onboarding_data.dart';
+import 'package:optivus/features/onboarding/presentation/mappers/onboarding_ui_mappers.dart';
+import 'package:optivus/features/onboarding/application/user_preferences_provider.dart';
 
 class StepBlueprintSummary extends ConsumerWidget {
   final VoidCallback onFinish;
@@ -124,7 +125,7 @@ class StepBlueprintSummary extends ConsumerWidget {
                               ),
                               const SizedBox(width: 12),
                               Icon(
-                                e.value.icon,
+                                OnboardingUiMappers.identityGoalIcon(e.value),
                                 size: 16,
                                 color: OptivusTheme.secondaryText,
                               ),

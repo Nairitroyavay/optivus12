@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
 import 'package:optivus/core/widgets/liquid_glass_chip.dart';
-import 'package:optivus/features/onboarding/data/onboarding_data.dart';
-import 'package:optivus/features/onboarding/data/user_preferences_provider.dart';
+import 'package:optivus/features/onboarding/domain/models/onboarding_data.dart';
+import 'package:optivus/features/onboarding/presentation/mappers/onboarding_ui_mappers.dart';
+import 'package:optivus/features/onboarding/application/user_preferences_provider.dart';
 
 class StepIdentityGoals extends ConsumerStatefulWidget {
   final VoidCallback onNext;
@@ -82,7 +83,7 @@ class _StepIdentityGoalsState extends ConsumerState<StepIdentityGoals> {
                     children: IdentityGoal.values.map((goal) {
                       return LiquidGlassChip(
                         label: goal.label,
-                        icon: goal.icon,
+                        icon: OnboardingUiMappers.identityGoalIcon(goal),
                         isSelected: state.identityGoals.contains(goal),
                         onTap: () => ref
                             .read(userPreferencesProvider.notifier)

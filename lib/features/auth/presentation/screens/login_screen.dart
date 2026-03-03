@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:optivus/core/widgets/glass_text_field.dart';
 import 'package:optivus/core/widgets/glass_app_icon.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
+import 'package:optivus/core/auth/auth_session_provider.dart';
+import 'package:optivus/features/auth/presentation/providers/auth_providers.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
@@ -42,31 +44,27 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    try {
-      await Supabase.instance.client.auth.signInWithPassword(
-        email: email,
-        password: password,
+    final result = await ref
+        .read(authRepositoryProvider)
+        .signIn(email: email, password: password);
+
+    if (mounted) {
+      result.fold(
+        (failure) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(failure.message)));
+        },
+        (_) {
+          // Success: AuthSessionProvider detects the session change
+          // and notifies the AppRouter automatically.
+          ref.read(analyticsServiceProvider).logLogin(method: 'email');
+        },
       );
-      // We DO NOT call context.go() here.
-      // The AuthSessionProvider detects the session change and notifies the AppRouter automatically.
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('An unexpected error occurred')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 

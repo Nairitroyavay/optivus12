@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/widgets/glass_text_field.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
+import 'package:optivus/features/auth/domain/repositories/auth_repository.dart';
+import 'package:optivus/core/auth/auth_session_provider.dart';
+import 'package:optivus/features/auth/presentation/providers/auth_providers.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -44,46 +47,38 @@ class _SignupScreenState extends State<SignupScreen> {
       _isLoading = true;
     });
 
-    try {
-      final response = await Supabase.instance.client.auth.signUp(
-        email: email,
-        password: password,
-        data: {'full_name': name},
+    final result = await ref
+        .read(authRepositoryProvider)
+        .signUp(email: email, password: password, name: name);
+
+    if (mounted) {
+      result.fold(
+        (failure) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(failure.message)));
+        },
+        (signUpResult) {
+          if (signUpResult is AuthSignUpNeedsVerification) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Verification email sent. Please check your inbox.',
+                ),
+              ),
+            );
+            context.go('/login');
+          } else {
+            // AuthSignUpConfirmed — session active.
+            ref.read(analyticsServiceProvider).logSignUp(method: 'email');
+          }
+          // AppRouter reacts automatically to auth state.
+        },
       );
 
-      if (mounted) {
-        if (response.user != null && response.session == null) {
-          // Email confirmation required
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Verification email sent. Please check your inbox.',
-              ),
-            ),
-          );
-          context.go('/login');
-        }
-        // If they are logged in immediately (session != null),
-        // we DO NOT call context.go(). AppRouter reacts automatically.
-      }
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('An unexpected error occurred')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -108,8 +103,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 child: const Center(
                   child: Icon(
-                    Icons
-                        .diamond_outlined, // Closest material icon to the diamond in the design
+                    Icons.diamond_outlined,
                     color: Colors.white,
                     size: 28,
                   ),

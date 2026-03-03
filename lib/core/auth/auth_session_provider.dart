@@ -1,149 +1,170 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:optivus/core/auth/auth_state.dart';
+import 'package:optivus/core/auth/data/profile_remote_datasource.dart';
+import 'package:optivus/core/auth/data/profile_repository_impl.dart';
+import 'package:optivus/core/auth/domain/profile_repository.dart';
+import 'package:optivus/core/services/analytics_service.dart';
+
+// ─── Provider 1: Firebase Auth Stream ─────────────────────────
+//
+// Single responsibility: listen to FirebaseAuth.authStateChanges().
+// Returns User? — nothing else.
+final firebaseAuthStateProvider = StreamProvider<User?>((ref) {
+  return FirebaseAuth.instance.authStateChanges();
+});
+
+// ─── Provider 2: Profile Repository DI ────────────────────────
+
+final profileRemoteDataSourceProvider = Provider<ProfileRemoteDataSource>(
+  (ref) => ProfileRemoteDataSource(),
+);
+
+final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
+  final ds = ref.watch(profileRemoteDataSourceProvider);
+  return ProfileRepositoryImpl(ds);
+});
+
+// ─── Provider 3: SharedPreferences DI ─────────────────────────
+//
+// Injected via provider so it can be overridden in tests.
+final sharedPreferencesProvider = Provider<Future<SharedPreferences>>((ref) {
+  return SharedPreferences.getInstance();
+});
+
+// ─── Provider 4: Analytics DI ─────────────────────────────────
+
+final analyticsServiceProvider = Provider<AnalyticsService>(
+  (ref) => AnalyticsService(),
+);
+
+// ─── Provider 4: Combined Auth Session ────────────────────────
+//
+// Combines auth stream + profile data + SharedPreferences cache
+// into the existing AuthState sealed class.
 
 final authSessionProvider = NotifierProvider<AuthSessionNotifier, AuthState>(
   AuthSessionNotifier.new,
 );
 
 class AuthSessionNotifier extends Notifier<AuthState> {
-  StreamSubscription? _authSubscription;
   static const _cacheKey = 'optivus_onboarding_complete';
 
   @override
   AuthState build() {
-    _initAuthListener();
+    // React to the auth stream.
+    // When the Firebase user changes, this entire notifier rebuilds.
+    final authAsync = ref.watch(firebaseAuthStateProvider);
 
-    ref.onDispose(() {
-      _authSubscription?.cancel();
-    });
+    return authAsync.when(
+      loading: () => const AuthLoading(),
+      error: (_, _) => const AuthUnauthenticated(),
+      data: (user) {
+        if (user == null) return const AuthUnauthenticated();
 
-    return const AuthLoading();
-  }
-
-  void _initAuthListener() {
-    // Listen to Supabase auth stream
-    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
-      data,
-    ) {
-      final session = data.session;
-      final event = data.event;
-
-      // Filter events: We only care about initial session, sign-in, and sign-out.
-      // We ignore TokenRefreshed and UserUpdated to prevent spamming the hydration logic.
-      if (event != AuthChangeEvent.initialSession &&
-          event != AuthChangeEvent.signedIn &&
-          event != AuthChangeEvent.signedOut) {
-        return;
-      }
-
-      if (session == null) {
-        state = const AuthUnauthenticated();
-      } else {
-        _hydrateSession(session.user.id);
-      }
-    });
+        // User is authenticated — kick off profile hydration.
+        // Return loading while hydration runs in the background.
+        _hydrateSession(user.uid);
+        return const AuthLoading();
+      },
+    );
   }
 
   Future<void> _hydrateSession(String userId) async {
+    final profileRepo = ref.read(profileRepositoryProvider);
+
     // 1. Read from ultra-fast local cache first
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await ref.read(sharedPreferencesProvider);
     final cachedStatus = prefs.getBool(_cacheKey);
 
     if (cachedStatus != null) {
       // Emit immediately for instant UX
       state = AuthAuthenticated(isOnboardingComplete: cachedStatus);
-      // Still validate in background silently to ensure consistency across devices
-      _validateWithDatabase(userId, prefs, currentCached: cachedStatus);
+      // Still validate in background silently
+      _validateWithRepository(
+        userId,
+        prefs,
+        profileRepo,
+        currentCached: cachedStatus,
+      );
     } else {
-      // No cache, force strict DB check before letting them into the app
-      await _validateWithDatabase(userId, prefs);
+      // No cache, force strict check before letting them into the app
+      await _validateWithRepository(userId, prefs, profileRepo);
     }
   }
 
-  Future<void> _validateWithDatabase(
+  Future<void> _validateWithRepository(
     String userId,
-    SharedPreferences prefs, {
+    SharedPreferences prefs,
+    ProfileRepository profileRepo, {
     bool? currentCached,
   }) async {
-    try {
-      final profile = await Supabase.instance.client
-          .from('profiles')
-          .select('onboarding_complete')
-          .eq('id', userId)
-          .maybeSingle();
+    // ensureProfile is idempotent — creates if missing, preserves if exists.
+    final result = await profileRepo.ensureProfile(userId);
 
-      bool isComplete = false;
-
-      if (profile == null) {
-        // Fallback: This is a critical edge case.
-        // If the query succeeds but the row is missing (e.g., failed trigger),
-        // we must insert it to guarantee referential integrity and routing logic.
-        try {
-          await Supabase.instance.client.from('profiles').insert({
-            'id': userId,
-            'onboarding_complete': false,
-            'updated_at': DateTime.now().toIso8601String(),
-          });
-        } catch (_) {
-          // If insert fails (RLS or otherwise), we still proceed locally as false
+    result.fold(
+      (failure) {
+        // Network/Firestore failed.
+        if (currentCached == null) {
+          // Offline cold start with no cache — trap in onboarding.
+          state = const AuthAuthenticated(isOnboardingComplete: false);
         }
-        isComplete = false;
-      } else {
-        isComplete = profile['onboarding_complete'] == true;
-      }
+        // If we HAD a cache and network failed, trust the cache (already emitted).
+      },
+      (profile) {
+        final isComplete = profile.isOnboardingComplete;
 
-      // Update cache
-      await prefs.setBool(_cacheKey, isComplete);
+        // Update cache
+        prefs.setBool(_cacheKey, isComplete);
 
-      // Only update state if it actually changed, to prevent unnecessary router rebuilds
-      if (currentCached != isComplete) {
-        state = AuthAuthenticated(isOnboardingComplete: isComplete);
-      }
-    } catch (e) {
-      // If network fails (offline) and we had no cache:
-      if (currentCached == null) {
-        // Offline cold start with cleared cache but valid session token.
-        // We cannot securely allow them into /home without proof.
-        // We trap them in onboarding. (If they try to save onboarding offline, it will fail gracefully too).
-        state = const AuthAuthenticated(isOnboardingComplete: false);
-      }
-      // If we HAD a cache and network failed offline, we strictly trust the cache.
-    }
+        // Only update state if changed, to prevent unnecessary router rebuilds
+        if (currentCached != isComplete) {
+          state = AuthAuthenticated(isOnboardingComplete: isComplete);
+        }
+      },
+    );
   }
 
-  /// Called explicitly when the user finishes onboarding
+  /// Called explicitly when the user finishes onboarding.
+  /// DB write MUST succeed before updating cache and state.
+  /// uid is extracted from the auth stream — never calls FirebaseAuth.instance directly.
   Future<void> completeOnboarding() async {
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session == null) return;
+    // Extract uid from the auth stream provider — no direct FirebaseAuth.instance call.
+    final authAsync = ref.read(firebaseAuthStateProvider);
+    final user = authAsync.value;
+    if (user == null) return;
 
-    final userId = session.user.id;
+    final profileRepo = ref.read(profileRepositoryProvider);
 
-    // 1. Instantly update local cache and state for immediate UI reaction
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_cacheKey, true);
-    state = const AuthAuthenticated(isOnboardingComplete: true);
+    // 1. Persist to Firestore FIRST — source of truth.
+    final result = await profileRepo.markOnboardingComplete(user.uid);
 
-    // 2. Persist to DB
-    try {
-      await Supabase.instance.client
-          .from('profiles')
-          .update({'onboarding_complete': true})
-          .eq('id', userId);
-    } catch (e) {
-      // For mission-critical apps, you might queue this in a local DB to retry later if offline
-      debugPrint('Failed to save onboarding completion to DB: $e');
-    }
+    // 2. Only after success: update cache and state.
+    result.fold(
+      (failure) {
+        // Propagate failure so the UI can show a snackbar.
+        throw Exception(failure.message);
+      },
+      (_) async {
+        final prefs = await ref.read(sharedPreferencesProvider);
+        await prefs.setBool(_cacheKey, true);
+        state = const AuthAuthenticated(isOnboardingComplete: true);
+
+        // Fire analytics event — non-blocking, failure-safe.
+        ref.read(analyticsServiceProvider).logOnboardingComplete();
+      },
+    );
   }
 
-  /// Called explicitly on manual logout to wipe cache
+  /// Called explicitly on manual logout to wipe cache.
+  /// Routes through datasource — never calls FirebaseAuth.instance directly.
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await ref.read(sharedPreferencesProvider);
     await prefs.remove(_cacheKey);
-    await Supabase.instance.client.auth.signOut();
-    // State will automatically update via the stream listener
+    final ds = ref.read(profileRemoteDataSourceProvider);
+    await ds.signOut();
+    // State will automatically update via the auth stream → rebuild.
   }
 }

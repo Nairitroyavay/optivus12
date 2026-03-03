@@ -17,3 +17,7 @@ class NetworkFailure extends Failure {
 class CacheFailure extends Failure {
   const CacheFailure([super.message = 'Failed to load local data.']);
 }
+
+class AuthFailure extends Failure {
+  const AuthFailure([super.message = 'Authentication failed.']);
+}

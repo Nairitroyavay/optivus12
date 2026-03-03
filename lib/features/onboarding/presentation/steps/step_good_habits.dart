@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
-import 'package:optivus/features/onboarding/data/onboarding_data.dart';
-import 'package:optivus/features/onboarding/data/user_preferences_provider.dart';
+import 'package:optivus/features/onboarding/domain/models/onboarding_data.dart';
+import 'package:optivus/features/onboarding/presentation/mappers/onboarding_ui_mappers.dart';
+import 'package:optivus/features/onboarding/application/user_preferences_provider.dart';
 
 class StepGoodHabits extends ConsumerWidget {
   final VoidCallback onNext;
@@ -89,7 +90,7 @@ class StepGoodHabits extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            habit.icon,
+                            OnboardingUiMappers.goodHabitIcon(habit),
                             size: 20,
                             color: isSelected
                                 ? OptivusTheme.accentGold

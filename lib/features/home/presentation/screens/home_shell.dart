@@ -7,7 +7,7 @@ import 'package:optivus/core/widgets/liquid_glass_tabbar.dart';
 /// Pure navigation shell for the home tabs.
 ///
 /// This widget does NOT store _currentIndex, does NOT use IndexedStack,
-/// does NOT call setState, and does NOT access auth or Supabase.
+/// does NOT call setState, and does NOT access auth or Firebase.
 ///
 /// The router controls which branch is active.
 /// The UI reacts to the route — not the other way around.

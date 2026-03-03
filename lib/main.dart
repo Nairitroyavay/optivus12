@@ -1,20 +1,45 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:optivus/firebase_options.dart';
 import 'package:optivus/core/theme/app_gradients.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/router/app_router.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // Catch all errors in a zone and forward to Crashlytics.
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Supabase with production credentials.
-  await Supabase.initialize(
-    url: 'https://izcjrwqpjfxycygffild.supabase.co',
-    anonKey: 'sb_publishable_Ld7ie0XnXY9Ggh2vjNatMQ_kcE5N8Ja',
+      // Initialize Firebase — single entry point, never re-initialized elsewhere.
+      try {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+
+        // Set up Crashlytics error handlers after successful Firebase init.
+        FlutterError.onError =
+            FirebaseCrashlytics.instance.recordFlutterFatalError;
+      } catch (e, st) {
+        // Firebase init failed — log but don't crash the app.
+        // This allows the app to at least show an error screen.
+        debugPrint('Firebase initialization failed: $e\n$st');
+      }
+
+      runApp(const ProviderScope(child: OptivusApp()));
+    },
+    (error, stack) {
+      // Zone-level catch: forward uncaught async errors to Crashlytics.
+      try {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      } catch (_) {
+        // Crashlytics not available (Firebase init failed) — silently ignore.
+      }
+    },
   );
-
-  runApp(const ProviderScope(child: OptivusApp()));
 }
 
 class OptivusApp extends ConsumerWidget {

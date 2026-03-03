@@ -1,0 +1,63 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Profiles ──────────────────────────────────────────────
+    // Owner-only read/write.
+    // created_at is immutable after initial creation.
+    // onboarding_complete can only transition false → true.
+    match /profiles/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null
+                    && request.auth.uid == uid
+                    // created_at must not change after creation
+                    && request.resource.data.created_at == resource.data.created_at
+                    // onboarding_complete can only go false → true, never regress
+                    && (request.resource.data.onboarding_complete == resource.data.onboarding_complete
+                        || (resource.data.onboarding_complete == false
+                            && request.resource.data.onboarding_complete == true));
+      allow delete: if false;
+    }
+
+    // ── User Preferences ──────────────────────────────────────
+    // Owner-only read/write.
+    match /user_preferences/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Daily Summaries (flat collection with composite IDs) ──
+    // Owner-only: document ID must be {uid}_{YYYY-MM-DD}.
+    match /daily_summaries/{docId} {
+      allow read: if request.auth != null
+                  && docId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}-[0-9]{2}');
+      allow write: if request.auth != null
+                   && docId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}-[0-9]{2}');
+    }
+
+    // ── Goals ─────────────────────────────────────────────────
+    match /goals/{uid}/items/{goalId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Coach Sessions ────────────────────────────────────────
+    match /coach_sessions/{uid}/threads/{threadId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // ── Behavior Logs ─────────────────────────────────────────
+    match /behavior_logs/{uid}/events/{eventId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Deny everything else ──────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
