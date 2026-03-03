@@ -59,7 +59,7 @@ class StepBlueprintSummary extends ConsumerWidget {
           _buildGlassSection(
             title: 'Daily Routine',
             actionLabel: 'Preview',
-            child: _buildDailyRoutinePreview(state),
+            child: _buildDailyRoutinePreview(context, state),
           ),
           const SizedBox(height: 16),
           _buildGlassSection(
@@ -100,7 +100,7 @@ class StepBlueprintSummary extends ConsumerWidget {
     );
   }
 
-  Widget _buildDailyRoutinePreview(OnboardingData state) {
+  Widget _buildDailyRoutinePreview(BuildContext context, UserPreferencesState state) {
     final enabledBlocks = state.schedule.where((b) => b.isEnabled).take(2).toList();
     if (enabledBlocks.isEmpty) {
       return const Text('No schedule set yet.');
@@ -184,7 +184,7 @@ class StepBlueprintSummary extends ConsumerWidget {
     );
   }
 
-  Widget _buildHabitFocus(OnboardingData state) {
+  Widget _buildHabitFocus(UserPreferencesState state) {
     final habits = state.goodHabits.take(3).toList();
     if (habits.isEmpty) {
       return const Text('No habits selected yet.');
@@ -197,7 +197,7 @@ class StepBlueprintSummary extends ConsumerWidget {
           label: habit.label,
           progress: habit.progress ?? 0.0,
           percentage: '${((habit.progress ?? 0.0) * 100).toInt()}%',
-          color: OnboardingUiMappers.goodHabitColor(habit),
+          color: OptivusTheme.accentGold,
         );
       }).toList(),
     );
