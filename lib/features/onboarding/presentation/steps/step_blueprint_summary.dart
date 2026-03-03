@@ -16,20 +16,17 @@ class StepBlueprintSummary extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(userPreferencesProvider);
 
+    // Use a fallback if the user skipped the goal selection step
     final displayGoals = state.identityGoals.isNotEmpty
         ? state.identityGoals.take(3).toList()
-        : [
-            IdentityGoal.financiallyFree,
-            IdentityGoal.strongBody,
-          ]; // Fallbacks if empty
+        : [IdentityGoal.financiallyFree, IdentityGoal.strongBody];
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 12),
-
           RichText(
             text: const TextSpan(
               style: TextStyle(
@@ -53,160 +50,156 @@ class StepBlueprintSummary extends ConsumerWidget {
             'Optivus will auto-adjust this dynamically over time based on your performance.',
             style: TextStyle(
               fontSize: 15,
-              color: OptivusTheme.secondaryText.withValues(alpha: 0.8),
+              color: OptivusTheme.secondaryText.withOpacity(0.8),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // 1. Daily Routine Preview
-                  _buildGlassSection(
-                    title: 'Daily Routine',
-                    actionLabel: 'Preview',
-                    child: Column(
-                      children: [
-                        _buildTimelineItem(
-                          time: '07:30',
-                          amPm: 'AM',
-                          title: 'Deep Work Phase',
-                          color: const Color(0xFFF59E0B), // Ember
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 20),
-                          child: Container(
-                            width: 2,
-                            height: 20,
-                            color: Colors.grey.withValues(alpha: 0.2),
-                            alignment: Alignment.centerLeft,
-                          ),
-                        ),
-                        _buildTimelineItem(
-                          time: '08:30',
-                          amPm: 'AM',
-                          title: 'Team Sync & Check-ins',
-                          color: const Color(0xFF10B981), // Mint
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 2. Top Goals
-                  _buildGlassSection(
-                    title: 'Top 3 Goals',
-                    child: Column(
-                      children: displayGoals.asMap().entries.map((e) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: OptivusTheme.accentGold.withValues(
-                                    alpha: 0.15,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '${e.key + 1}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      color: OptivusTheme.accentGold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Icon(
-                                OnboardingUiMappers.identityGoalIcon(e.value),
-                                size: 16,
-                                color: OptivusTheme.secondaryText,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  e.value.label,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: OptivusTheme.primaryText,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 3. Habit Focus
-                  _buildGlassSection(
-                    title: 'Habit Focus',
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildProgressRing(
-                          label: 'Sleep',
-                          progress: 0.75,
-                          percentage: '75%',
-                          color: const Color(0xFF6B7280),
-                        ),
-                        _buildProgressRing(
-                          label: 'Fitness',
-                          progress: 0.82,
-                          percentage: '82%',
-                          color: const Color(0xFF10B981),
-                        ),
-                        _buildProgressRing(
-                          label: 'Work',
-                          progress: 0.60,
-                          percentage: '60%',
-                          color: const Color(0xFFF59E0B),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // Sections
+          _buildGlassSection(
+            title: 'Daily Routine',
+            actionLabel: 'Preview',
+            child: _buildDailyRoutinePreview(state),
           ),
+          const SizedBox(height: 16),
+          _buildGlassSection(
+            title: 'Top 3 Goals',
+            child: _buildTopGoals(displayGoals),
+          ),
+          const SizedBox(height: 16),
+          _buildGlassSection(
+            title: 'Habit Focus',
+            child: _buildHabitFocus(state),
+          ),
+          const SizedBox(height: 48),
 
           // Action Buttons
           LiquidGlassButton(
             text: 'Enter Optivus',
             onPressed: onFinish,
             icon: Icons.arrow_forward,
+            tintColor: OptivusTheme.accentGold,
           ),
           const SizedBox(height: 12),
-
           Center(
             child: TextButton(
-              onPressed: () {
-                // Allows user to edit the plan later
-                onFinish();
-              },
+              onPressed: onFinish, // Allow editing later
               child: Text(
                 'Edit Plan Later',
                 style: TextStyle(
-                  color: OptivusTheme.secondaryText.withValues(alpha: 0.6),
+                  color: OptivusTheme.secondaryText.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
                   decoration: TextDecoration.underline,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+
+  Widget _buildDailyRoutinePreview(OnboardingData state) {
+    final enabledBlocks = state.schedule.where((b) => b.isEnabled).take(2).toList();
+    if (enabledBlocks.isEmpty) {
+      return const Text('No schedule set yet.');
+    }
+
+    return Column(
+      children: enabledBlocks.asMap().entries.map((entry) {
+        final index = entry.key;
+        final block = entry.value;
+        final startTime = OnboardingUiMappers.scheduleBlockStartTime(block);
+
+        return Column(
+          children: [
+            _buildTimelineItem(
+              time: startTime.format(context),
+              title: block.label,
+              color: OnboardingUiMappers.scheduleBlockColor(block),
+            ),
+            if (index < enabledBlocks.length - 1)
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Container(
+                  width: 2,
+                  height: 20,
+                  color: Colors.grey.withOpacity(0.2),
+                  alignment: Alignment.centerLeft,
+                ),
+              ),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildTopGoals(List<IdentityGoal> goals) {
+    return Column(
+      children: goals.asMap().entries.map((e) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: OptivusTheme.accentGold.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    '${e.key + 1}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: OptivusTheme.accentGold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Icon(
+                OnboardingUiMappers.identityGoalIcon(e.value),
+                size: 16,
+                color: OptivusTheme.secondaryText,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  e.value.label,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: OptivusTheme.primaryText,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildHabitFocus(OnboardingData state) {
+    final habits = state.goodHabits.take(3).toList();
+    if (habits.isEmpty) {
+      return const Text('No habits selected yet.');
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: habits.map((habit) {
+        return _buildProgressRing(
+          label: habit.label,
+          progress: habit.progress ?? 0.0,
+          percentage: '${((habit.progress ?? 0.0) * 100).toInt()}%',
+          color: OnboardingUiMappers.goodHabitColor(habit),
+        );
+      }).toList(),
     );
   }
 
@@ -223,9 +216,9 @@ class StepBlueprintSummary extends ConsumerWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.5),
+            color: Colors.white.withOpacity(0.5),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+            border: Border.all(color: Colors.white.withOpacity(0.5)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,7 +241,7 @@ class StepBlueprintSummary extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: OptivusTheme.accentGold.withValues(alpha: 0.15),
+                        color: OptivusTheme.accentGold.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -273,37 +266,22 @@ class StepBlueprintSummary extends ConsumerWidget {
 
   Widget _buildTimelineItem({
     required String time,
-    required String amPm,
     required String title,
     required Color color,
   }) {
     return Row(
       children: [
         SizedBox(
-          width: 45,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                time,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: OptivusTheme.primaryText,
-                ),
-              ),
-              Text(
-                amPm,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: OptivusTheme.secondaryText.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
+          width: 55,
+          child: Text(
+            time,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: OptivusTheme.primaryText,
+            ),
           ),
         ),
-        const SizedBox(width: 16),
         Container(
           width: 10,
           height: 10,
@@ -342,7 +320,7 @@ class StepBlueprintSummary extends ConsumerWidget {
                 value: 1.0,
                 strokeWidth: 6,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.grey.withValues(alpha: 0.15),
+                  Colors.grey.withOpacity(0.15),
                 ),
               ),
               CircularProgressIndicator(
@@ -370,7 +348,7 @@ class StepBlueprintSummary extends ConsumerWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: OptivusTheme.secondaryText.withValues(alpha: 0.8),
+            color: OptivusTheme.secondaryText.withOpacity(0.8),
           ),
         ),
       ],

@@ -15,14 +15,14 @@ class StepImprovementAreas extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(userPreferencesProvider);
+    final notifier = ref.read(userPreferencesProvider.notifier);
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-
           const Text(
             'What do you want\nto improve?',
             style: TextStyle(
@@ -37,31 +37,29 @@ class StepImprovementAreas extends ConsumerWidget {
             'This helps Optivus design your personalized AI strategy.',
             style: TextStyle(
               fontSize: 15,
-              color: OptivusTheme.secondaryText.withValues(alpha: 0.8),
+              color: OptivusTheme.secondaryText.withOpacity(0.8),
             ),
           ),
           const SizedBox(height: 32),
 
-          // 2x3 Grid
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 1.1,
-              physics: const NeverScrollableScrollPhysics(),
-              children: ImprovementArea.values.map((area) {
-                return LiquidGlassCard(
-                  label: area.label,
-                  icon: OnboardingUiMappers.improvementAreaIcon(area),
-                  isSelected: state.improvementAreas.contains(area),
-                  onTap: () => ref
-                      .read(userPreferencesProvider.notifier)
-                      .toggleImprovementArea(area),
-                );
-              }).toList(),
-            ),
+          // GridView without Expanded
+          GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.1,
+            shrinkWrap: true, // Important for scrollable parent
+            physics: const NeverScrollableScrollPhysics(), // Parent handles scrolling
+            children: ImprovementArea.values.map((area) {
+              return LiquidGlassCard(
+                label: area.label,
+                icon: OnboardingUiMappers.improvementAreaIcon(area),
+                isSelected: state.improvementAreas.contains(area),
+                onTap: () => notifier.toggleImprovementArea(area),
+              );
+            }).toList(),
           ),
+          const SizedBox(height: 32),
 
           // Continue Button
           LiquidGlassButton(text: 'Continue', onPressed: onNext),
@@ -73,13 +71,13 @@ class StepImprovementAreas extends ConsumerWidget {
               child: Text(
                 'Skip for now',
                 style: TextStyle(
-                  color: OptivusTheme.secondaryText.withValues(alpha: 0.6),
+                  color: OptivusTheme.secondaryText.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
         ],
       ),
     );

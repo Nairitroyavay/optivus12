@@ -36,14 +36,14 @@ class _StepIdentityGoalsState extends ConsumerState<StepIdentityGoals> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(userPreferencesProvider);
+    final notifier = ref.read(userPreferencesProvider.notifier);
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-
           RichText(
             text: const TextSpan(
               style: TextStyle(
@@ -66,80 +66,62 @@ class _StepIdentityGoalsState extends ConsumerState<StepIdentityGoals> {
             'Your goals shape how your AI coach talks, plans, and motivates you.',
             style: TextStyle(
               fontSize: 15,
-              color: OptivusTheme.secondaryText.withValues(alpha: 0.8),
+              color: OptivusTheme.secondaryText.withOpacity(0.8),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
-          // Scrollable goals
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: IdentityGoal.values.map((goal) {
-                      return LiquidGlassChip(
-                        label: goal.label,
-                        icon: OnboardingUiMappers.identityGoalIcon(goal),
-                        isSelected: state.identityGoals.contains(goal),
-                        onTap: () => ref
-                            .read(userPreferencesProvider.notifier)
-                            .toggleIdentityGoal(goal),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 24),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: IdentityGoal.values.map((goal) {
+              return LiquidGlassChip(
+                label: goal.label,
+                icon: OnboardingUiMappers.identityGoalIcon(goal),
+                isSelected: state.identityGoals.contains(goal),
+                onTap: () => notifier.toggleIdentityGoal(goal),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 32),
 
-                  // Custom Goal
-                  Text(
-                    'Add your own',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: OptivusTheme.secondaryText.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.grey.withValues(alpha: 0.2),
-                      ),
-                    ),
-                    child: TextField(
-                      controller: _customController,
-                      maxLength: 100,
-                      onChanged: (val) {
-                        ref
-                            .read(userPreferencesProvider.notifier)
-                            .setCustomGoal(val);
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Type a custom goal...',
-                        counterText: '',
-                        hintStyle: TextStyle(
-                          color: OptivusTheme.secondaryText.withValues(
-                            alpha: 0.4,
-                          ),
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+          // Custom Goal
+          Text(
+            'Add your own',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: OptivusTheme.secondaryText.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.2),
+              ),
+            ),
+            child: TextField(
+              controller: _customController,
+              maxLength: 100,
+              onChanged: notifier.setCustomGoal,
+              decoration: InputDecoration(
+                hintText: 'Type a custom goal...',
+                counterText: '',
+                hintStyle: TextStyle(
+                  color: OptivusTheme.secondaryText.withOpacity(0.4),
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
             ),
           ),
+          const SizedBox(height: 48),
 
           // Next Button
           LiquidGlassButton(
@@ -147,7 +129,7 @@ class _StepIdentityGoalsState extends ConsumerState<StepIdentityGoals> {
             onPressed: widget.onNext,
             icon: Icons.arrow_forward,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
         ],
       ),
     );

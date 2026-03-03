@@ -2,18 +2,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 
-/// An iOS-style liquid glass button with a thick 3D chrome body,
-/// convex lens gradient, bright specular highlights, and inner glow.
-///
-/// Inspired by Apple's iOS 26 liquid glass design language.
 class LiquidGlassButton extends StatefulWidget {
   final String text;
   final VoidCallback onPressed;
   final bool isLoading;
   final IconData? icon;
-
-  /// Optional accent tint blended into the glass.
-  /// Defaults to frosted white glass with navy-black text.
   final Color? tintColor;
 
   const LiquidGlassButton({
@@ -39,6 +32,7 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton>
     final bool hasTint = tint != null;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) {
         setState(() => _pressed = false);
@@ -52,8 +46,6 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton>
           height: 62,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(31),
-            // ── OUTER SHADOWS ── 3D float effect
-            boxShadow: const [],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(31),
@@ -62,7 +54,6 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton>
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(31),
-                  // ── MAIN GLASS FILL ── Convex lens gradient
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -82,7 +73,6 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton>
                     stops: const [0.0, 0.35, 0.65, 1.0],
                   ),
                 ),
-                // ── CONTENT ──
                 child: Center(
                   child: widget.isLoading
                       ? SizedBox(

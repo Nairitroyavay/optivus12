@@ -47,6 +47,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       _isLoading = true;
     });
 
+    // Simulate network delay for a better UX demonstration
+    await Future.delayed(const Duration(seconds: 2));
+
     final result = await ref
         .read(authRepositoryProvider)
         .signUp(email: email, password: password, name: name);
@@ -60,19 +63,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         },
         (signUpResult) {
           if (signUpResult is AuthSignUpNeedsVerification) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Verification email sent. Please check your inbox.',
-                ),
-              ),
-            );
-            context.go('/login');
+            context.go('/verify-email');
           } else {
-            // AuthSignUpConfirmed — session active.
             ref.read(analyticsServiceProvider).logSignUp(method: 'email');
           }
-          // AppRouter reacts automatically to auth state.
         },
       );
 
@@ -92,8 +86,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           child: Column(
             children: [
               const SizedBox(height: 40),
-
-              // Diamond Logo Icon
               Container(
                 width: 64,
                 height: 64,
@@ -110,8 +102,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Title
               const Text(
                 'Join the top 1%.',
                 textAlign: TextAlign.center,
@@ -124,8 +114,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-
-              // Subtitle
               Text(
                 'Create your Optivus account.',
                 textAlign: TextAlign.center,
@@ -136,16 +124,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-
-              // Full Name Field
               GlassTextField(
                 controller: _nameController,
                 hintText: 'Full Name',
                 prefixIcon: Icons.person_rounded,
               ),
               const SizedBox(height: 16),
-
-              // Email Field
               GlassTextField(
                 controller: _emailController,
                 hintText: 'Email',
@@ -153,8 +137,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 prefixIcon: Icons.email_rounded,
               ),
               const SizedBox(height: 16),
-
-              // Password Field
               GlassTextField(
                 controller: _passwordController,
                 hintText: 'Password',
@@ -162,8 +144,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 prefixIcon: Icons.lock_rounded,
               ),
               const SizedBox(height: 32),
-
-              // Create Account Button
               LiquidGlassButton(
                 text: 'Create Account',
                 onPressed: _signup,
@@ -171,8 +151,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 icon: Icons.arrow_forward,
               ),
               const SizedBox(height: 32),
-
-              // Terms of Service
               Text(
                 'By joining, you agree to our Terms of Service.',
                 textAlign: TextAlign.center,
@@ -183,8 +161,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Login Link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
