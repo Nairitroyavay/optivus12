@@ -20,7 +20,7 @@ class FeedRepositoryImpl implements FeedRepository {
       return Right(model.toEntity());
     } on FirebaseException catch (e) {
       AppLogger.error('Firestore query failed for daily summary', e);
-      return Left(ServerFailure('Failed to load your daily summary.'));
+      return Left(ServerFailure('Failed to load your daily summary: ${e.message}'));
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get daily summary', e, stackTrace);
       return Left(ServerFailure('An unexpected error occurred.'));
