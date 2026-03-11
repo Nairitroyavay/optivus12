@@ -67,7 +67,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   });
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/login',
     refreshListenable: mergedListenable,
     redirect: (context, state) {
       final authState = authStateListenable.value;
@@ -100,12 +100,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // ── AuthUnauthenticated ────────────────────────────────────────────────
       if (authState is AuthUnauthenticated) {
-        // Let the user stay on any explicit public route (/login, /signup,
-        // /verify-email, /forgot-password). Redirect everything else to splash.
-        if (isPublicRoute && loc != '/') {
+        // Allow any public route (including splash '/') to load freely.
+        // Redirect everything else (e.g. /onboarding, /home/*) to /login.
+        if (isPublicRoute) {
           return null;
         }
-        return '/';
+        return '/login';
       }
 
       // ── AuthAuthenticated ──────────────────────────────────────────────────
