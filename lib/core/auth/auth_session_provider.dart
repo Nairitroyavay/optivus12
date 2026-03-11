@@ -52,10 +52,19 @@ final authSessionProvider = NotifierProvider<AuthSessionNotifier, AuthState>(
 class AuthSessionNotifier extends Notifier<AuthState> {
   static const _cacheKey = 'optivus_onboarding_complete';
 
+  // Guard that prevents build() from resetting state back to AuthLoading
+  // while an async _hydrateSession call is already in flight.
+  // Without this, Riverpod re-runs build() on every Firebase stream tick
+  // (e.g. the token-refresh event that fires seconds after sign-in), which
+  // was overwriting the AuthAuthenticated state set by _hydrateSession.
+  bool _hydrating = false;
+
   @override
   AuthState build() {
-    // React to the auth stream.
-    // When the Firebase user changes, this entire notifier rebuilds.
+    // Reset the guard whenever the provider is rebuilt from scratch (e.g.
+    // after a full sign-out that disposes the notifier).
+    _hydrating = false;
+
     final authAsync = ref.watch(firebaseAuthStateProvider);
 
     return authAsync.when(
@@ -64,9 +73,20 @@ class AuthSessionNotifier extends Notifier<AuthState> {
       data: (user) {
         if (user == null) return const AuthUnauthenticated();
 
-        // User is authenticated — kick off profile hydration.
-        // Return loading while hydration runs in the background.
-        _hydrateSession(user.uid);
+        // Only start hydration once per session. Subsequent Firebase ticks
+        // (token refresh, etc.) must not restart hydration and must not
+        // override the AuthAuthenticated state we already set.
+        if (!_hydrating) {
+          _hydrating = true;
+          _hydrateSession(user.uid);
+        }
+
+        // If hydration already completed and set a richer state, preserve it.
+        // (This branch is reached when Firebase emits a tick after we've
+        // already set state = AuthAuthenticated.)
+        final current = state;
+        if (current is AuthAuthenticated) return current;
+
         return const AuthLoading();
       },
     );
@@ -145,10 +165,11 @@ class AuthSessionNotifier extends Notifier<AuthState> {
         // Update cache
         prefs.setBool(_cacheKey, isComplete);
 
-        // Only update state if changed, to prevent unnecessary router rebuilds
-        if (currentCached != isComplete) {
-          state = AuthAuthenticated(isOnboardingComplete: isComplete);
-        }
+        // Always emit the final state. The `if (currentCached != isComplete)`
+        // guard was silently swallowing the state update for returning users
+        // whose cache already matched Firestore, leaving the router stuck on
+        // AuthLoading and never redirecting to /home/feed.
+        state = AuthAuthenticated(isOnboardingComplete: isComplete);
       },
     );
   }
