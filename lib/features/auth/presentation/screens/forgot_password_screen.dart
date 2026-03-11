@@ -52,6 +52,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       _isLoading = true;
     });
 
+    final result = await ref
+        .read(authRepositoryProvider)
+        .sendPasswordResetEmail(email);
+
     if (mounted) {
       result.fold(
         (failure) {
