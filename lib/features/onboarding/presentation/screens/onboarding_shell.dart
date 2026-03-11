@@ -84,7 +84,7 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> {
     context.go('/home/feed');
   }
 
-  void _finish() async {
+  Future<void> _finish() async {
     try {
       // 1. Mark onboarding complete: writes DB first, then cache, then state.
       //    This triggers AppRouter redirect.
@@ -126,6 +126,10 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> {
       decoration: BoxDecoration(gradient: AppGradients.gradientForIndex(0)),
       child: Scaffold(
         backgroundColor: Colors.transparent,
+        // Each onboarding step uses SingleChildScrollView to handle keyboard
+        // avoidance individually. Setting this to false prevents the PageView
+        // itself from being resized, which caused the 274px overflow on Step 9.
+        resizeToAvoidBottomInset: false,
         body: SafeArea(
           child: Column(
             children: [

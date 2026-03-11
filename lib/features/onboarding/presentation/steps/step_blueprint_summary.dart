@@ -7,13 +7,31 @@ import 'package:optivus/features/onboarding/domain/models/onboarding_data.dart';
 import 'package:optivus/features/onboarding/presentation/mappers/onboarding_ui_mappers.dart';
 import 'package:optivus/features/onboarding/application/user_preferences_provider.dart';
 
-class StepBlueprintSummary extends ConsumerWidget {
-  final VoidCallback onFinish;
+class StepBlueprintSummary extends ConsumerStatefulWidget {
+  final Future<void> Function() onFinish;
 
   const StepBlueprintSummary({super.key, required this.onFinish});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StepBlueprintSummary> createState() =>
+      _StepBlueprintSummaryState();
+}
+
+class _StepBlueprintSummaryState extends ConsumerState<StepBlueprintSummary> {
+  bool _isLoading = false;
+
+  Future<void> _handleFinish() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      await widget.onFinish();
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(userPreferencesProvider);
 
     // Use a fallback if the user skipped the goal selection step
@@ -73,17 +91,19 @@ class StepBlueprintSummary extends ConsumerWidget {
           ),
           const SizedBox(height: 48),
 
-          // Action Buttons
+          // Primary CTA — loading state shows while Firestore write is in progress
           LiquidGlassButton(
             text: 'Enter Optivus',
-            onPressed: onFinish,
+            onPressed: _handleFinish,
+            isLoading: _isLoading,
+            loadingText: 'Saving your blueprint…',
             icon: Icons.arrow_forward,
             tintColor: OptivusTheme.accentGold,
           ),
           const SizedBox(height: 12),
           Center(
             child: TextButton(
-              onPressed: onFinish, // Allow editing later
+              onPressed: _isLoading ? null : _handleFinish,
               child: Text(
                 'Edit Plan Later',
                 style: TextStyle(
@@ -100,7 +120,10 @@ class StepBlueprintSummary extends ConsumerWidget {
     );
   }
 
-  Widget _buildDailyRoutinePreview(BuildContext context, UserPreferencesState state) {
+  Widget _buildDailyRoutinePreview(
+    BuildContext context,
+    UserPreferencesState state,
+  ) {
     final enabledBlocks = state.schedule.where((b) => b.isEnabled).take(2).toList();
     if (enabledBlocks.isEmpty) {
       return const Text('No schedule set yet.');

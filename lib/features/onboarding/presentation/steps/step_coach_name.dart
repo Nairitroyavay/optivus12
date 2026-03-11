@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
@@ -40,8 +41,11 @@ class _StepCoachNameState extends ConsumerState<StepCoachName> {
     final state = ref.watch(userPreferencesProvider);
     final suggestions = ['Dad', 'Maa', 'Sensei', 'Bro', 'Chief'];
 
-    return Padding(
+    // SingleChildScrollView allows the page to scroll up when the keyboard
+    // appears — this is the fix for the critical 274px keyboard overflow.
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -66,37 +70,48 @@ class _StepCoachNameState extends ConsumerState<StepCoachName> {
           ),
           const SizedBox(height: 32),
 
-          // Input Field
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-            ),
-            child: TextField(
-              controller: _controller,
-              maxLength: 50,
-              onChanged: (val) {
-                ref.read(userPreferencesProvider.notifier).setCoachName(val);
-              },
-              decoration: InputDecoration(
-                hintText: 'e.g., Marcus, Athena, Coach...',
-                prefixIcon: const Icon(
-                  Icons.person_outline_rounded,
-                  color: OptivusTheme.secondaryText,
+          // Glass Input Field — BackdropFilter for consistent glassmorphism
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    width: 1.5,
+                  ),
                 ),
-                counterText: '',
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 20),
-                hintStyle: TextStyle(
-                  color: OptivusTheme.secondaryText.withValues(alpha: 0.4),
+                child: TextField(
+                  controller: _controller,
+                  maxLength: 50,
+                  onChanged: (val) {
+                    ref
+                        .read(userPreferencesProvider.notifier)
+                        .setCoachName(val);
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'e.g., Marcus, Athena, Coach...',
+                    prefixIcon: const Icon(
+                      Icons.person_outline_rounded,
+                      color: OptivusTheme.secondaryText,
+                    ),
+                    counterText: '',
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 20),
+                    hintStyle: TextStyle(
+                      color: OptivusTheme.secondaryText.withValues(alpha: 0.4),
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(height: 24),
 
-          // Suggestions
+          // Quick name suggestions
           Text(
             'SUGGESTIONS',
             style: TextStyle(
@@ -137,12 +152,12 @@ class _StepCoachNameState extends ConsumerState<StepCoachName> {
               );
             }).toList(),
           ),
-          const Spacer(),
 
-          // Preview Card
-          if (state.coachName != null && state.coachName!.isNotEmpty)
+          // Preview Card — no Spacer, just natural vertical flow
+          if (state.coachName != null && state.coachName!.isNotEmpty) ...[
+            const SizedBox(height: 24),
             Opacity(
-              opacity: 0.8,
+              opacity: 0.85,
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -187,7 +202,9 @@ class _StepCoachNameState extends ConsumerState<StepCoachName> {
                 ),
               ),
             ),
-          const SizedBox(height: 24),
+          ],
+
+          const SizedBox(height: 32),
 
           // Next Button
           LiquidGlassButton(
@@ -195,7 +212,7 @@ class _StepCoachNameState extends ConsumerState<StepCoachName> {
             onPressed: widget.onNext,
             icon: Icons.arrow_forward,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
         ],
       ),
     );

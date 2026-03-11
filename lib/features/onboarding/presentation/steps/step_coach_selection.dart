@@ -16,7 +16,7 @@ class StepCoachSelection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(userPreferencesProvider);
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,27 +50,28 @@ class StepCoachSelection extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          // 2x2 Grid
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 0.9,
-              physics: const NeverScrollableScrollPhysics(),
-              children: CoachPersonality.values.map((pers) {
-                return LiquidGlassCard(
-                  label: pers.label,
-                  subtitle: pers.description,
-                  icon: OnboardingUiMappers.coachPersonalityIcon(pers),
-                  isSelected: state.coachPersonality == pers,
-                  onTap: () => ref
-                      .read(userPreferencesProvider.notifier)
-                      .setCoachPersonality(pers),
-                );
-              }).toList(),
-            ),
+          // 2x2 Grid — shrinkWrap so it sizes to its children in the scroll view
+          GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 0.9,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: CoachPersonality.values.map((pers) {
+              return LiquidGlassCard(
+                label: pers.label,
+                subtitle: pers.description,
+                icon: OnboardingUiMappers.coachPersonalityIcon(pers),
+                isSelected: state.coachPersonality == pers,
+                onTap: () => ref
+                    .read(userPreferencesProvider.notifier)
+                    .setCoachPersonality(pers),
+              );
+            }).toList(),
           ),
+
+          const SizedBox(height: 24),
 
           // Continue Button
           LiquidGlassButton(
@@ -78,7 +79,7 @@ class StepCoachSelection extends ConsumerWidget {
             onPressed: state.coachPersonality != null ? onNext : () {},
             icon: Icons.arrow_forward,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
         ],
       ),
     );

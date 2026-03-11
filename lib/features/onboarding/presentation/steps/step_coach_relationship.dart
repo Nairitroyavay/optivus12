@@ -16,7 +16,7 @@ class StepCoachRelationship extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(userPreferencesProvider);
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,34 +42,35 @@ class StepCoachRelationship extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          // 2x3 Grid
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 14,
-              childAspectRatio: 1.05,
-              physics: const NeverScrollableScrollPhysics(),
-              children: CoachRelationship.values.map((rel) {
-                return LiquidGlassCard(
-                  label: rel.label,
-                  subtitle: rel.subtitle,
-                  icon: OnboardingUiMappers.coachRelationshipIcon(rel),
-                  isSelected: state.coachRelationship == rel,
-                  onTap: () => ref
-                      .read(userPreferencesProvider.notifier)
-                      .setCoachRelationship(rel),
-                );
-              }).toList(),
-            ),
+          // 2x3 Grid — shrinkWrap so it sizes to its children in the scroll view
+          GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 14,
+            crossAxisSpacing: 14,
+            childAspectRatio: 1.05,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: CoachRelationship.values.map((rel) {
+              return LiquidGlassCard(
+                label: rel.label,
+                subtitle: rel.subtitle,
+                icon: OnboardingUiMappers.coachRelationshipIcon(rel),
+                isSelected: state.coachRelationship == rel,
+                onTap: () => ref
+                    .read(userPreferencesProvider.notifier)
+                    .setCoachRelationship(rel),
+              );
+            }).toList(),
           ),
+
+          const SizedBox(height: 24),
 
           // Continue Button
           LiquidGlassButton(
             text: 'Continue',
             onPressed: state.coachRelationship != null ? onNext : () {},
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
         ],
       ),
     );

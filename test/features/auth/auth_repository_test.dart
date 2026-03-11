@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -12,6 +13,8 @@ import 'package:optivus/core/failures/failure.dart';
 class MockAuthRemoteDataSource extends Mock implements AuthRemoteDataSource {}
 
 class MockUserCredential extends Mock implements UserCredential {}
+
+class MockUser extends Mock implements User {}
 
 void main() {
   late MockAuthRemoteDataSource mockDataSource;
@@ -82,24 +85,63 @@ void main() {
     const password = 'securePass123';
     const name = 'Test User';
 
-    test('returns AuthSignUpConfirmed on successful sign-up', () async {
-      when(
-        () =>
-            mockDataSource.signUp(email: email, password: password, name: name),
-      ).thenAnswer((_) async => MockUserCredential());
+    test(
+      'returns AuthSignUpNeedsVerification when user email is not verified',
+      () async {
+        final mockCredential = MockUserCredential();
+        final mockUser = MockUser();
 
-      final result = await repository.signUp(
-        email: email,
-        password: password,
-        name: name,
-      );
+        when(() => mockUser.emailVerified).thenReturn(false);
+        when(() => mockUser.sendEmailVerification()).thenAnswer((_) async {});
+        when(() => mockCredential.user).thenReturn(mockUser);
+        when(
+          () =>
+              mockDataSource.signUp(email: email, password: password, name: name),
+        ).thenAnswer((_) async => mockCredential);
 
-      expect(result.isRight(), true);
-      result.fold(
-        (_) => fail('Expected Right'),
-        (signUpResult) => expect(signUpResult, isA<AuthSignUpConfirmed>()),
-      );
-    });
+        final result = await repository.signUp(
+          email: email,
+          password: password,
+          name: name,
+        );
+
+        // The repository signs the user out after sending the verification email.
+        // We only verify the repository's return value here.
+        expect(result.isRight(), true);
+        result.fold(
+          (_) => fail('Expected Right'),
+          (signUpResult) =>
+              expect(signUpResult, isA<AuthSignUpNeedsVerification>()),
+        );
+      },
+    );
+
+    test(
+      'returns AuthSignUpConfirmed when user is already verified (e.g. SSO)',
+      () async {
+        final mockCredential = MockUserCredential();
+        final mockUser = MockUser();
+
+        when(() => mockUser.emailVerified).thenReturn(true);
+        when(() => mockCredential.user).thenReturn(mockUser);
+        when(
+          () =>
+              mockDataSource.signUp(email: email, password: password, name: name),
+        ).thenAnswer((_) async => mockCredential);
+
+        final result = await repository.signUp(
+          email: email,
+          password: password,
+          name: name,
+        );
+
+        expect(result.isRight(), true);
+        result.fold(
+          (_) => fail('Expected Right'),
+          (signUpResult) => expect(signUpResult, isA<AuthSignUpConfirmed>()),
+        );
+      },
+    );
 
     test('returns AuthFailure on email-already-in-use', () async {
       when(

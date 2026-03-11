@@ -8,6 +8,7 @@ class LiquidGlassButton extends StatefulWidget {
   final bool isLoading;
   final IconData? icon;
   final Color? tintColor;
+  final String? loadingText;
 
   const LiquidGlassButton({
     super.key,
@@ -16,6 +17,7 @@ class LiquidGlassButton extends StatefulWidget {
     this.isLoading = false,
     this.icon,
     this.tintColor,
+    this.loadingText,
   });
 
   @override
@@ -75,15 +77,34 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton>
                 ),
                 child: Center(
                   child: widget.isLoading
-                      ? SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              hasTint ? Colors.white : OptivusTheme.primaryText,
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  hasTint ? Colors.white : OptivusTheme.primaryText,
+                                ),
+                              ),
                             ),
-                          ),
+                            if (widget.loadingText != null) ...[
+                              const SizedBox(width: 10),
+                              Text(
+                                widget.loadingText!,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: hasTint
+                                      ? Colors.white
+                                      : OptivusTheme.primaryText,
+                                ),
+                              ),
+                            ],
+                          ],
                         )
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,

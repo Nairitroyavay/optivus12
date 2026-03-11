@@ -36,9 +36,22 @@ class AuthRepositoryImpl implements AuthRepository {
     required String name,
   }) async {
     try {
-      await _dataSource.signUp(email: email, password: password, name: name);
+      final credential = await _dataSource.signUp(
+        email: email,
+        password: password,
+        name: name,
+      );
 
-      // Firebase Auth immediately confirms accounts.
+      final user = credential.user;
+      if (user != null && !user.emailVerified) {
+        // Send verification email before signing out so the user can verify.
+        await user.sendEmailVerification();
+        // Sign out immediately — the session is only granted after email verification.
+        await FirebaseAuth.instance.signOut();
+        return const Right(AuthSignUpNeedsVerification());
+      }
+
+      // Rare: already verified (e.g. social/federated auth) — let them in.
       return const Right(AuthSignUpConfirmed());
     } on FirebaseAuthException catch (e) {
       AppLogger.error('Auth sign-up failed', e);

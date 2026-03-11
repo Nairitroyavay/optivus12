@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/widgets/glass_text_field.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
+import 'package:optivus/core/failures/failure.dart';
 import 'package:optivus/features/auth/domain/repositories/auth_repository.dart';
 import 'package:optivus/core/auth/auth_session_provider.dart';
 import 'package:optivus/features/auth/presentation/providers/auth_providers.dart';
@@ -20,6 +22,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  String _loadingMessage = 'Creating your account…';
 
   @override
   void dispose() {
@@ -45,34 +48,53 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     setState(() {
       _isLoading = true;
+      _loadingMessage = 'Creating your account\u2026';
     });
 
-    // Simulate network delay for a better UX demonstration
-    await Future.delayed(const Duration(seconds: 2));
+    // Show progressive feedback after 3 seconds if the API call is slow.
+    final feedbackTimer = Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && _isLoading) {
+        setState(() => _loadingMessage = 'Setting up your workspace\u2026');
+      }
+    });
 
-    final result = await ref
-        .read(authRepositoryProvider)
-        .signUp(email: email, password: password, name: name);
+    try {
+      final result = await ref
+          .read(authRepositoryProvider)
+          .signUp(email: email, password: password, name: name)
+          .timeout(
+            // 30s covers 4 chained Firebase calls (createUser, updateDisplayName,
+            // sendEmailVerification, signOut) even on slow mobile connections.
+            const Duration(seconds: 30),
+            onTimeout: () => const Left(
+              AuthFailure('Connection timed out. Please check your internet and try again.'),
+            ),
+          );
 
-    if (mounted) {
-      result.fold(
-        (failure) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(failure.message)));
-        },
-        (signUpResult) {
-          if (signUpResult is AuthSignUpNeedsVerification) {
-            context.go('/verify-email');
-          } else {
-            ref.read(analyticsServiceProvider).logSignUp(method: 'email');
-          }
-        },
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        result.fold(
+          (failure) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(failure.message)));
+          },
+          (signUpResult) {
+            if (signUpResult is AuthSignUpNeedsVerification) {
+              context.go('/verify-email');
+            } else {
+              ref.read(analyticsServiceProvider).logSignUp(method: 'email');
+            }
+          },
+        );
+      }
+    } finally {
+      feedbackTimer.ignore();
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _loadingMessage = 'Creating your account\u2026';
+        });
+      }
     }
   }
 
@@ -149,6 +171,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 onPressed: _signup,
                 isLoading: _isLoading,
                 icon: Icons.arrow_forward,
+                loadingText: _loadingMessage,
               ),
               const SizedBox(height: 32),
               Text(

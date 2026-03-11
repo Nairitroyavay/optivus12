@@ -73,6 +73,32 @@ class AuthSessionNotifier extends Notifier<AuthState> {
   }
 
   Future<void> _hydrateSession(String userId) async {
+    // ── Email Verification Guard ──────────────────────────────────────────
+    // Firebase creates a session immediately on signUp(), even for unverified
+    // users. We must NOT grant AuthAuthenticated until the email is verified.
+    // Reload the user first so emailVerified reflects the latest server state.
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      try {
+        // Timeout reload so a slow/dead connection never blocks auth state.
+        // 5s is generous — the local emailVerified cache will be used if this fails.
+        await currentUser.reload().timeout(
+          const Duration(seconds: 5),
+        );
+      } catch (_) {
+        // Reload failed or timed out — fall through and use cached state.
+        // emailVerified on the cached user object may be stale but that is
+        // acceptable: the user can manually trigger a check on the verify screen.
+      }
+      final reloaded = FirebaseAuth.instance.currentUser;
+      if (reloaded != null && !reloaded.emailVerified) {
+        // User exists but hasn't verified yet — hold them at unauthenticated
+        // so the router keeps them on /verify-email or /login.
+        state = const AuthUnauthenticated();
+        return;
+      }
+    }
+
     final profileRepo = ref.read(profileRepositoryProvider);
 
     // 1. Read from ultra-fast local cache first

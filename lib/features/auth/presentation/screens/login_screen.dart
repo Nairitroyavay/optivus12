@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
+import 'package:optivus/core/failures/failure.dart';
 import 'package:optivus/core/widgets/glass_text_field.dart';
 import 'package:optivus/core/widgets/glass_app_icon.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
@@ -40,31 +42,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-    final result = await ref
-        .read(authRepositoryProvider)
-        .signIn(email: email, password: password);
+    try {
+      final result = await ref
+          .read(authRepositoryProvider)
+          .signIn(email: email, password: password)
+          .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () => const Left(
+              AuthFailure('Connection timed out. Please check your internet and try again.'),
+            ),
+          );
 
-    if (mounted) {
-      result.fold(
-        (failure) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(failure.message)));
-        },
-        (_) {
-          // Success: AuthSessionProvider detects the session change
-          // and notifies the AppRouter automatically.
-          ref.read(analyticsServiceProvider).logLogin(method: 'email');
-        },
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        result.fold(
+          (failure) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(failure.message)));
+          },
+          (_) {
+            // Success: AuthSessionProvider detects the session and notifies the router.
+            ref.read(analyticsServiceProvider).logLogin(method: 'email');
+          },
+        );
+      }
+    } finally {
+      // Always reset loading — even if signIn hangs, the user gets control back.
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

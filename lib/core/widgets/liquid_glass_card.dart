@@ -40,8 +40,12 @@ class LiquidGlassCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.transparent,
+                color: Colors.white.withValues(alpha: 0.38),
                 borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.55),
+                  width: 1.2,
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
