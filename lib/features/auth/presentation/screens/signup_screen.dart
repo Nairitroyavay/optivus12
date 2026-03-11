@@ -9,6 +9,7 @@ import 'package:optivus/core/failures/failure.dart';
 import 'package:optivus/features/auth/domain/repositories/auth_repository.dart';
 import 'package:optivus/core/auth/auth_session_provider.dart';
 import 'package:optivus/features/auth/presentation/providers/auth_providers.dart';
+import 'package:optivus/core/network/network_providers.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -45,7 +46,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       }
       return;
     }
-
+    // quick network check before entering loading state
+    final connected = await ref.read(networkInfoProvider).isConnected;
+    if (!connected) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No internet connection. Please check your connection and try again.'),
+          ),
+        );
+      }
+      return;
+    }
     setState(() {
       _isLoading = true;
       _loadingMessage = 'Creating your account\u2026';
@@ -63,9 +75,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           .read(authRepositoryProvider)
           .signUp(email: email, password: password, name: name)
           .timeout(
-            // 30s covers 4 chained Firebase calls (createUser, updateDisplayName,
-            // sendEmailVerification, signOut) even on slow mobile connections.
-            const Duration(seconds: 30),
+            // 20s keeps the flow responsive while still allowing multiple backend
+            // calls; transparency is handled by the loading message timer.
+            const Duration(seconds: 20),
             onTimeout: () => const Left(
               AuthFailure('Connection timed out. Please check your internet and try again.'),
             ),

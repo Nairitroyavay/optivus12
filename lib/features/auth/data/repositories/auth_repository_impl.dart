@@ -1,23 +1,51 @@
+import 'dart:async';
+
 import 'package:fpdart/fpdart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:optivus/core/failures/failure.dart';
 import 'package:optivus/core/logger/app_logger.dart';
+import 'package:optivus/core/network/network_info.dart';
 import 'package:optivus/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:optivus/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _dataSource;
+  final NetworkInfo _networkInfo;
 
-  AuthRepositoryImpl(this._dataSource);
+  // Timeouts are also applied at the repository layer so callers (UI/tests)
+  // don't have to duplicate the logic and the failure happens quickly when
+  // Firebase stops responding.  The UI still wraps the call as an extra
+  // safeguard but the repository is the single source of truth for timing.
+  static const _signInTimeout = Duration(seconds: 15);
+  // allow slightly shorter timeout on sign‑up; the UI gives explicit
+  // progress messages and the network check will already bail out early.
+  static const _signUpTimeout = Duration(seconds: 20);
 
+  AuthRepositoryImpl(this._dataSource, this._networkInfo);
+
+  @override
   @override
   Future<Either<AuthFailure, void>> signIn({
     required String email,
     required String password,
   }) async {
+    // quick network pre‑check saves the user from waiting for the timeout
+    if (!await _networkInfo.isConnected) {
+      return const Left(
+        AuthFailure('No internet connection. Please check your connection and try again.'),
+      );
+    }
+
     try {
-      await _dataSource.signIn(email: email, password: password);
+      // apply a timeout at the repository level as a safety net
+      await _dataSource
+          .signIn(email: email, password: password)
+          .timeout(_signInTimeout);
       return const Right(null);
+    } on TimeoutException {
+      return const Left(
+        AuthFailure('Connection timed out. Please check your internet and try again.'),
+      );
     } on FirebaseAuthException catch (e) {
       AppLogger.error('Auth sign-in failed', e);
       return Left(AuthFailure(_mapAuthCode(e.code)));
@@ -30,17 +58,22 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  @override
   Future<Either<AuthFailure, AuthSignUpResult>> signUp({
     required String email,
     required String password,
     required String name,
   }) async {
-    try {
-      final credential = await _dataSource.signUp(
-        email: email,
-        password: password,
-        name: name,
+    if (!await _networkInfo.isConnected) {
+      return const Left(
+        AuthFailure('No internet connection. Please check your connection and try again.'),
       );
+    }
+
+    try {
+      final credential = await _dataSource
+          .signUp(email: email, password: password, name: name)
+          .timeout(_signUpTimeout);
 
       final user = credential.user;
       if (user != null && !user.emailVerified) {
@@ -53,6 +86,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // Rare: already verified (e.g. social/federated auth) — let them in.
       return const Right(AuthSignUpConfirmed());
+    } on TimeoutException {
+      return const Left(
+        AuthFailure('Connection timed out. Please check your internet and try again.'),
+      );
     } on FirebaseAuthException catch (e) {
       AppLogger.error('Auth sign-up failed', e);
       return Left(AuthFailure(_mapAuthCode(e.code)));
@@ -68,9 +105,21 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<AuthFailure, void>> resetPassword({
     required String email,
   }) async {
+    if (!await _networkInfo.isConnected) {
+      return const Left(
+        AuthFailure('No internet connection. Please check your connection and try again.'),
+      );
+    }
+
     try {
-      await _dataSource.resetPassword(email: email);
+      await _dataSource
+          .resetPassword(email: email)
+          .timeout(_signInTimeout); // same as sign in since it's a simple call
       return const Right(null);
+    } on TimeoutException {
+      return const Left(
+        AuthFailure('Connection timed out. Please check your internet and try again.'),
+      );
     } on FirebaseAuthException catch (e) {
       AppLogger.error('Password reset failed', e);
       return Left(AuthFailure(_mapAuthCode(e.code)));

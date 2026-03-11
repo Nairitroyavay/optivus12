@@ -8,9 +8,12 @@ import 'package:optivus/features/auth/data/datasources/auth_remote_datasource.da
 import 'package:optivus/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:optivus/features/auth/domain/repositories/auth_repository.dart';
 import 'package:optivus/core/failures/failure.dart';
+import 'package:optivus/core/network/network_info.dart';
 
 // ─── Mocks ─────────────────────────────────────────────────────
 class MockAuthRemoteDataSource extends Mock implements AuthRemoteDataSource {}
+
+class MockNetworkInfo extends Mock implements NetworkInfo {}
 
 class MockUserCredential extends Mock implements UserCredential {}
 
@@ -18,11 +21,15 @@ class MockUser extends Mock implements User {}
 
 void main() {
   late MockAuthRemoteDataSource mockDataSource;
+  late MockNetworkInfo mockNetworkInfo;
   late AuthRepositoryImpl repository;
 
   setUp(() {
     mockDataSource = MockAuthRemoteDataSource();
-    repository = AuthRepositoryImpl(mockDataSource);
+    mockNetworkInfo = MockNetworkInfo();
+    // default to online unless a test says otherwise
+    when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+    repository = AuthRepositoryImpl(mockDataSource, mockNetworkInfo);
   });
 
   group('signIn', () {
@@ -40,6 +47,32 @@ void main() {
       verify(
         () => mockDataSource.signIn(email: email, password: password),
       ).called(1);
+    });
+
+    test('returns failure immediately when offline', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+
+      final result = await repository.signIn(email: email, password: password);
+      expect(result.isLeft(), true);
+      result.fold((failure) {
+        expect(failure.message,
+            'No internet connection. Please check your connection and try again.');
+      }, (_) => fail('Expected Left'));
+      verifyNever(() => mockDataSource.signIn(email: email, password: password));
+    });
+
+    test('times out when remote call takes too long', () async {
+      // simulate a hang by returning a future that never completes
+      when(
+        () => mockDataSource.signIn(email: email, password: password),
+      ).thenAnswer((_) => Future.delayed(const Duration(seconds: 60)));
+
+      final result = await repository.signIn(email: email, password: password);
+      expect(result.isLeft(), true);
+      result.fold((failure) {
+        expect(failure.message,
+            'Connection timed out. Please check your internet and try again.');
+      }, (_) => fail('Expected Left'));
     });
 
     test(
@@ -105,8 +138,6 @@ void main() {
           name: name,
         );
 
-        // The repository signs the user out after sending the verification email.
-        // We only verify the repository's return value here.
         expect(result.isRight(), true);
         result.fold(
           (_) => fail('Expected Right'),
@@ -115,6 +146,35 @@ void main() {
         );
       },
     );
+
+    test('returns failure immediately when offline', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+
+      final result = await repository.signUp(
+          email: email, password: password, name: name);
+      expect(result.isLeft(), true);
+      result.fold((failure) {
+        expect(failure.message,
+            'No internet connection. Please check your connection and try again.');
+      }, (_) => fail('Expected Left'));
+      verifyNever(
+          () => mockDataSource.signUp(email: email, password: password, name: name));
+    });
+
+    test('signUp times out when datasource hangs', () async {
+      when(
+        () =>
+            mockDataSource.signUp(email: email, password: password, name: name),
+      ).thenAnswer((_) => Future.delayed(const Duration(seconds: 60)));
+
+      final result = await repository.signUp(
+          email: email, password: password, name: name);
+      expect(result.isLeft(), true);
+      result.fold((failure) {
+        expect(failure.message,
+            'Connection timed out. Please check your internet and try again.');
+      }, (_) => fail('Expected Left'));
+    });
 
     test(
       'returns AuthSignUpConfirmed when user is already verified (e.g. SSO)',
@@ -174,6 +234,31 @@ void main() {
       final result = await repository.resetPassword(email: email);
 
       expect(result.isRight(), true);
+    });
+
+    test('fails immediately when offline', () async {
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+
+      final result = await repository.resetPassword(email: email);
+      expect(result.isLeft(), true);
+      result.fold((failure) {
+        expect(failure.message,
+            'No internet connection. Please check your connection and try again.');
+      }, (_) => fail('Expected Left'));
+      verifyNever(() => mockDataSource.resetPassword(email: email));
+    });
+
+    test('times out if datasource hangs', () async {
+      when(
+        () => mockDataSource.resetPassword(email: email),
+      ).thenAnswer((_) => Future.delayed(const Duration(seconds: 60)));
+
+      final result = await repository.resetPassword(email: email);
+      expect(result.isLeft(), true);
+      result.fold((failure) {
+        expect(failure.message,
+            'Connection timed out. Please check your internet and try again.');
+      }, (_) => fail('Expected Left'));
     });
   });
 }

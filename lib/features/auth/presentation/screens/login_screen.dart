@@ -9,6 +9,7 @@ import 'package:optivus/core/widgets/liquid_glass_button.dart';
 import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/auth/auth_session_provider.dart';
 import 'package:optivus/features/auth/presentation/providers/auth_providers.dart';
+import 'package:optivus/core/network/network_providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -37,6 +38,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please enter your email and password')),
+        );
+      }
+      return;
+    }
+
+    // Pre-flight network check avoids flashing the spinner in offline mode.
+    final connected = await ref.read(networkInfoProvider).isConnected;
+    if (!connected) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No internet connection. Please check your connection and try again.'),
+          ),
         );
       }
       return;

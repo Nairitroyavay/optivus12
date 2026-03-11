@@ -5,6 +5,7 @@ import 'package:optivus/core/theme/optivus_theme.dart';
 import 'package:optivus/core/widgets/glass_text_field.dart';
 import 'package:optivus/core/widgets/liquid_glass_button.dart';
 import 'package:optivus/features/auth/presentation/providers/auth_providers.dart';
+import 'package:optivus/core/network/network_providers.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -35,13 +36,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       return;
     }
 
+    final connected = await ref.read(networkInfoProvider).isConnected;
+    if (!connected) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No internet connection. Please check your connection and try again.'),
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
-
-    final result = await ref
-        .read(authRepositoryProvider)
-        .resetPassword(email: email);
 
     if (mounted) {
       result.fold(
